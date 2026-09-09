@@ -1,24 +1,62 @@
-# Logs
-logs
-*.log
+# ==========================================
+# 1. .NET & C# Artifacts
+# ==========================================
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.booproj
+*.svclog
+.vs/
+.vscode/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+
+# Roslyn / Rider / JetBrains
+.idea/
+*.DotSettings.user
+
+# ==========================================
+# 2. Node.js & React (Frontend)
+# ==========================================
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Vite build output
+frontend/dist/
+frontend/dist-ssr/
 *.local
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# ==========================================
+# 3. Environment Variables & Secret Files
+# ==========================================
+# File berisi secret key, token, connection string rahasia
+.env
+.env.local
+.env.*.local
+*.env
+
+# .NET User Secrets & appsettings override lokal
+backend/**/appsettings.Development.json
+# (Catatan: appsettings.json dasar tetap boleh di-commit sebagai template,
+# tapi file Development yang berisi password DB lokal sebaiknya diabaikan jika sensitif)
+
+# ==========================================
+# 4. OS & System Junk
+# ==========================================
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+desktop.ini
