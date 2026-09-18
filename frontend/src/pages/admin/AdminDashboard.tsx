@@ -2,6 +2,7 @@ import { useState } from 'react';
 import AdminProjects from './AdminProjects';
 import AdminIllustrations from './AdminIllustrations';
 import AdminDevlogs from './AdminDevlogs';
+import { authService } from '../../services/api';
 
 type Tab = 'projects' | 'devlogs' | 'illustrations';
 
@@ -49,6 +50,14 @@ export default function AdminDashboard() {
             }`}
           >
             Illustrations
+          </button>
+
+          {/* Tombol Logout */}
+          <button
+            onClick={() => authService.logout()}
+            className="px-3 py-2 rounded-xl text-xs font-medium text-red-400 bg-red-950/20 hover:bg-red-950/50 border border-red-900/40 transition-colors cursor-pointer"
+          >
+            Keluar
           </button>
         </div>
       </header>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Portofolio.Application.DTOs.Projects;
 using Portofolio.Domain.Entities;
 using Portofolio.Infrastructure.Persistence;
@@ -37,6 +38,7 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
     }
 
     // POST: api/projects
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<ProjectDto>> CreateProject(CreateProjectDto dto)
     {
@@ -104,6 +106,7 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
     }
 
     // PUT: api/projects/{id}
+    [Authorize]
     [HttpPut("{id}")]
     public async Task<ActionResult<ProjectDto>> UpdateProject(Guid id, UpdateProjectDto dto)
     {
@@ -192,6 +195,7 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
     }
     
     // DELETE: api/projects/{id}
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProject(Guid id)
     {

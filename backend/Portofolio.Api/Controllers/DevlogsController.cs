@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Portofolio.Application.DTOs.Devlogs;
 using Portofolio.Domain.Entities;
 using Portofolio.Infrastructure.Persistence;
@@ -76,6 +77,7 @@ public class DevlogsController(ApplicationDbContext context) : ControllerBase
     }
 
     // POST: api/devlogs
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<DevlogDto>> CreateDevlog(CreateDevlogDto dto)
     {
@@ -138,6 +140,7 @@ public class DevlogsController(ApplicationDbContext context) : ControllerBase
     }
 
     // PUT: api/devlogs/{id}
+    [Authorize]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<DevlogDto>> UpdateDevlog(Guid id, UpdateDevlogDto dto)
     {
@@ -240,6 +243,7 @@ public class DevlogsController(ApplicationDbContext context) : ControllerBase
     }
 
     // DELETE: api/devlogs/{id}
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteDevlog(Guid id)
     {

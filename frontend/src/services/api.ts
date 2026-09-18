@@ -10,13 +10,30 @@ import type {
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const token = localStorage.getItem('admin_token');
+  
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options?.headers,
+  };
+
+  // Sisipkan token JWT jika tersimpan di local storage
+  if (token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${BASE_URL}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
     ...options,
+    headers,
   });
+
+  // Jika server mengembalikan 401 Unauthorized, bersihkan token kadaluarsa
+  if (response.status === 401) {
+    localStorage.removeItem('admin_token');
+    if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
+      window.location.href = '/admin/login';
+    }
+  }
 
   if (!response.ok) {
     const errorBody = await response.text();
@@ -30,6 +47,32 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 
   return response.json() as Promise<T>;
 }
+
+export const authService = {
+  login: async (credentials: { username: string; password: string }) => {
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err || 'Gagal login.');
+    }
+
+    const data: { token: string; expiresAt: string } = await res.json();
+    localStorage.setItem('admin_token', data.token);
+    return data;
+  },
+  logout: () => {
+    localStorage.removeItem('admin_token');
+    window.location.href = '/admin/login';
+  },
+  isAuthenticated: () => {
+    return !!localStorage.getItem('admin_token');
+  }
+};
 
 export const projectService = {
   getAll: () => request<Project[]>('/projects'),

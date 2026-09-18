@@ -1,4 +1,7 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Portofolio.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 
@@ -13,6 +16,27 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // OpenAPI bawaan .NET 9 (AddEndpointsApiExplorer dihapus karena sudah tidak wajib)
 builder.Services.AddOpenApi();
+
+// Konfigurasi JWT Authentication
+var jwtKey = builder.Configuration["Jwt:Key"] 
+    ?? throw new InvalidOperationException("JWT Key belum dikonfigurasi di appsettings.json");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
@@ -41,7 +65,10 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
-app.UseAuthorization();
+
+app.UseAuthentication(); // 1. Autentikasi (Identifikasi identitas token)
+app.UseAuthorization();  // 2. Otorisasi (Evaluasi hak akses)
+
 app.MapControllers();
 
 app.Run();

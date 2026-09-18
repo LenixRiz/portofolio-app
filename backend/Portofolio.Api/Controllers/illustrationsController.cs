@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using Portofolio.Application.DTOs.Illustrations;
 using Portofolio.Domain.Entities;
 using Portofolio.Infrastructure.Persistence;
@@ -34,6 +35,7 @@ public class IllustrationsController(ApplicationDbContext context) : ControllerB
     }
 
     // POST: api/illustrations
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<IllustrationDto>> CreateIllustration(CreateIllustrationDto dto)
     {
@@ -91,6 +93,7 @@ public class IllustrationsController(ApplicationDbContext context) : ControllerB
     }
 
     // PUT: api/illustrations/{id}
+    [Authorize]
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<IllustrationDto>> UpdateIllustration(Guid id, UpdateIllustrationDto dto)
     {
@@ -174,6 +177,7 @@ public class IllustrationsController(ApplicationDbContext context) : ControllerB
     }
 
     // DELETE: api/illustrations/{id}
+    [Authorize]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteIllustration(Guid id)
     {

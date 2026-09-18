@@ -5,6 +5,8 @@ import ProjectsPage from './pages/public/ProjectsPage';
 import DevlogsPage from './pages/public/DevlogsPage';
 import DevlogDetailPage from './pages/public/DevlogDetailPage';
 import Homepage from './pages/public/Homepage';
+import LoginPage from './pages/admin/LoginPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function Navbar() {
   const location = useLocation();
@@ -62,7 +64,12 @@ export default function App() {
           <Route path="/illustrations" element={<IllustrationsPage />} />
           <Route path="/devlogs" element={<DevlogsPage />} />
           <Route path="/devlogs/:slug" element={<DevlogDetailPage key={window.location.pathname} />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+
+          {/* Rute Otentikasi Admin */}
+          <Route path="/admin/login" element={<LoginPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Route>
         </Routes>
       </div>
     </BrowserRouter>
