@@ -13,6 +13,6 @@ public class Project
     public bool IsFeatured { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public ICollection<Devlog> Devlogs = new List<Devlog>();
-    public ICollection<Tag> Tags = new List<Tag>();
+    public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+    public ICollection<Devlog> Devlogs { get; set; } = new List<Devlog>();
 }

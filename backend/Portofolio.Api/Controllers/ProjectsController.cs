@@ -15,7 +15,7 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
     public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjects()
     {
         var projects = await context.Projects
-            .Include(p => p.Tags) //Eager Loading: ambil relasi tag sekaligus
+            .AsNoTracking()
             .OrderByDescending(p => p.CreatedAt) // Sort dari paling bawah
             .Select(p => new ProjectDto // ambil variabel
             {
@@ -95,5 +95,105 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
         };
 
         return CreatedAtAction(nameof(GetProjects), new {id = project.Id}, resultDto);
+    }
+    /// PUT: api/projects/{id}
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ProjectDto>> UpdateProject(Guid id, UpdateProjectDto dto)
+    {
+        var project = await context.Projects
+            .Include(p => p.Tags)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (project == null)
+        {
+            return NotFound(new { message = $"Proyek dengan ID '{id}' tidak ditemukan." });
+        }
+
+        project.Title = dto.Title;
+        project.Summary = dto.Summary;
+        project.Description = dto.Description;
+        project.ThumbnailUrl = dto.ThumbnailUrl;
+        project.RepositoryUrl = dto.RepositoryUrl;
+        project.DemoUrl = dto.DemoUrl;
+        project.IsFeatured = dto.IsFeatured;
+
+        // Ambil list tag dari TagNames atau Tags
+        var inputTags = (dto.TagNames.Count > 0 ? dto.TagNames : dto.Tags) ?? new List<string>();
+
+        var cleanTagNames = inputTags
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Select(t => t.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var targetSlugs = cleanTagNames
+            .Select(t => t.ToLower().Replace(" ", "-"))
+            .ToHashSet();
+
+        // 1. Hapus tag yang tidak ada lagi di daftar input baru
+        var tagsToRemove = project.Tags
+            .Where(t => !targetSlugs.Contains(t.Slug))
+            .ToList();
+
+        foreach (var tag in tagsToRemove)
+        {
+            project.Tags.Remove(tag);
+        }
+
+        // 2. Tambahkan tag baru yang belum terhubung ke proyek ini
+        var currentSlugs = project.Tags.Select(t => t.Slug).ToHashSet();
+
+        foreach (var name in cleanTagNames)
+        {
+            var slug = name.ToLower().Replace(" ", "-");
+            if (currentSlugs.Contains(slug)) continue;
+
+            var existingTag = await context.Tags.FirstOrDefaultAsync(t => t.Slug == slug);
+            if (existingTag == null)
+            {
+                existingTag = new Tag
+                {
+                    Id = Guid.NewGuid(), // Eksplisit agar tidak menghasilkan Guid.Empty
+                    Name = name,
+                    Slug = slug
+                };
+                context.Tags.Add(existingTag);
+            }
+
+            project.Tags.Add(existingTag);
+        }
+
+        await context.SaveChangesAsync();
+
+        return Ok(new ProjectDto
+        {
+            Id = project.Id,
+            Title = project.Title,
+            Slug = project.Slug,
+            Summary = project.Summary,
+            Description = project.Description,
+            ThumbnailUrl = project.ThumbnailUrl,
+            RepositoryUrl = project.RepositoryUrl,
+            DemoUrl = project.DemoUrl,
+            IsFeatured = project.IsFeatured,
+            CreatedAt = project.CreatedAt,
+            Tags = project.Tags.Select(t => t.Name).ToList()
+        });
+    }
+
+    // DELETE: api/projects/{id}
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteProject(Guid id)
+    {
+        var project = await context.Projects.FindAsync(id);
+        if (project == null)
+        {
+            return NotFound(new { message = $"Proyek dengan ID '{id}' tidak ditemukan." });
+        }
+
+        context.Projects.Remove(project);
+        await context.SaveChangesAsync();
+
+        return NoContent();
     }
 }

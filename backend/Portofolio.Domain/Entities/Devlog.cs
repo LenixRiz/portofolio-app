@@ -12,5 +12,5 @@ public class Devlog
     public Guid ProjectId { get; set; }
     public Project Project { get; set;} = null!;
 
-    public ICollection<Tag> Tags = new List<Tag>();
+    public ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }

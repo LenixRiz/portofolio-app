@@ -1,6 +1,19 @@
-@Portofolio.Api_HostAddress = http://localhost:5063
-
-GET {{Portofolio.Api_HostAddress}}/weatherforecast/
+### 1. Ambil ID dari salah satu Project yang sudah ada
+GET http://localhost:5063/api/projects
 Accept: application/json
 
-###
+### 2. Buat Devlog Baru (Ganti {{projectId}} dengan ID hasil request pertama)
+POST http://localhost:5063/api/devlogs
+Content-Type: application/json
+
+{
+  "title": "Migrasi Database dan Setup Arsitektur",
+  "content": "Catatan teknis mengenai migrasi PostgreSQL dan implementasi Clean Architecture pada backend .NET 9.",
+  "isPublished": true,
+  "projectId": "ISI_DENGAN_GUID_PROJECT_DARI_STEP_1",
+  "tagNames": ["Backend", "PostgreSQL", "Clean Architecture"]
+}
+
+### 3. Baca Devlog berdasarkan Slug
+GET http://localhost:5063/api/devlogs/migrasi-database-dan-setup-arsitektur
+Accept: application/json
