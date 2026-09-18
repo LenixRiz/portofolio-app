@@ -23,15 +23,16 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
     isFeatured: project.isFeatured,
     tagsInput: project.tags.join(', '),
   });
-
+  
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
 
+    // Sanitasi: buang spasi, hapus simbol '#' yang diketik, filter string kosong
     const tagNames = form.tagsInput
       .split(',')
-      .map((t) => t.trim())
+      .map((t) => t.trim().replace(/^#+/, '').trim())
       .filter((t) => t.length > 0);
 
     try {
@@ -44,7 +45,7 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
         demoUrl: form.demoUrl.trim() || null,
         isFeatured: form.isFeatured,
         tagNames,
-    });
+      });
 
       onSuccess(updated);
       onClose();

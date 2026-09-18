@@ -1,144 +1,86 @@
-import { useEffect, useState } from 'react';
-import { projectService } from './services/api';
-import CreateProjectModal from './components/CreateProjectModal';
-import EditProjectModal from './components/EditProjectModal';
-import type { Project } from './types';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import IllustrationsPage from './pages/public/IllustrationsPage';
+import ProjectsPage from './pages/public/ProjectsPage';
+import DevlogsPage from './pages/public/DevlogsPage';
+import DevlogDetailPage from './pages/public/DevlogDetailPage';
 
-export default function App() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // State untuk melacak proyek mana yang sedang diedit
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-
-  useEffect(() => {
-    projectService.getAll()
-      .then((data) => {
-        setProjects(data);
-        setLoading(false);
-      })
-      .catch((err: Error) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
-
-  const handleProjectCreated = (newProject: Project) => {
-    setProjects((prev) => [newProject, ...prev]);
-  };
-
-  const handleProjectUpdated = (updated: Project) => {
-    setProjects((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-  };
-
-  const handleDelete = async (id: string, title: string) => {
-    if (!window.confirm(`Yakin ingin menghapus proyek "${title}"?`)) return;
-
-    try {
-      await projectService.delete(id);
-      setProjects((prev) => prev.filter((p) => p.id !== id));
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Gagal menghapus proyek');
-    }
-  };
+function Navbar() {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 p-8 max-w-6xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Portfolio Content Hub</h1>
-        <p className="text-neutral-400 text-sm mt-1">
-          Fullstack CMS Headless terintegrasi .NET 9, EF Core, & PostgreSQL
-        </p>
-      </header>
-
-      <CreateProjectModal onSuccess={handleProjectCreated} />
-
-      {loading && <p className="text-neutral-400">Memuat data dari backend...</p>}
-      {error && <p className="text-red-400 bg-red-950/40 p-4 rounded border border-red-800">Error: {error}</p>}
-
-      {!loading && !error && projects.length === 0 && (
-        <p className="text-neutral-500 italic">Belum ada proyek terdaftar.</p>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {projects.map((item) => (
-    <article
-      key={item.id}
-      className="flex flex-col justify-between overflow-hidden rounded-xl bg-neutral-900/60 border border-neutral-800 hover:border-neutral-700 transition-colors"
-    >
-      <div>
-        {/* Kontainer Gambar Thumbnail dengan Aspect Ratio & Fallback */}
-        <div className="relative aspect-video w-full overflow-hidden bg-neutral-950 border-b border-neutral-800">
-        <img
-          src={item.thumbnailUrl || 'https://placehold.co/600x400/171717/737373?text=No+Image'}
-          alt={item.title}
-          referrerPolicy="no-referrer" // Melewati proteksi hotlink server CDN eksternal
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-          onError={(e) => {
-            const img = e.currentTarget as HTMLImageElement;
-            img.onerror = null; // Mencegah pemanggilan berulang jika fallback juga bermasalah
-            img.src = 'https://placehold.co/600x400/171717/ef4444?text=Image+Load+Error';
-          }}
-        />
-      </div>
-
-        <div className="p-5">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <h2 className="text-lg font-semibold text-neutral-100 line-clamp-1">{item.title}</h2>
-            {item.isFeatured && (
-              <span className="text-[10px] font-semibold tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase">
-                Featured
-              </span>
-            )}
-          </div>
-          <p className="text-neutral-400 text-sm line-clamp-2 mb-4">{item.summary}</p>
+    <nav className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-40">
+      <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
+        <Link to="/" className="font-bold text-lg text-neutral-100 hover:text-white">
+          Portfolio<span className="text-indigo-500">.</span>
+        </Link>
+        <div className="flex gap-6 text-sm">
+          <Link
+            to="/projects"
+            className={`${location.pathname === '/projects' ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'}`}
+          >
+            Projects
+          </Link>
+          <Link
+            to="/illustrations"
+            className={`${location.pathname === '/illustrations' ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'}`}
+          >
+            Art & Illustrations
+          </Link>
+          <Link
+            to="/devlogs"
+            className={`${location.pathname === '/devlogs' ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'}`}
+          >
+            Devlogs
+          </Link>
+          <Link
+            to="/admin"
+            className={`px-3 py-1 rounded-md text-xs font-semibold ${
+              isAdmin
+                ? 'bg-indigo-600 text-white'
+                : 'bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-700'
+            }`}
+          >
+            CMS Admin
+          </Link>
         </div>
       </div>
+    </nav>
+  );
+}
 
-      <div className="p-5 pt-0">
-        <div className="pt-4 border-t border-neutral-800/80 flex items-center justify-between gap-2">
-          <div className="flex gap-1.5 flex-wrap">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs bg-neutral-800/80 text-neutral-300 px-2.5 py-0.5 rounded-md font-mono"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => setEditingProject(item)}
-              className="text-xs text-neutral-300 hover:text-white bg-neutral-800 hover:bg-neutral-700 px-2.5 py-1 rounded transition-colors cursor-pointer"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDelete(item.id, item.title)}
-              className="text-xs text-red-400 hover:text-red-300 bg-red-950/30 hover:bg-red-950/60 border border-red-900/50 px-2.5 py-1 rounded transition-colors cursor-pointer"
-            >
-              Hapus
-            </button>
-          </div>
-        </div>
-      </div>
-    </article>
-  ))}
-</div>
-
-      {/* Render modal hanya saat editingProject tidak null, dan pasang key unik */}
-      {editingProject && (
-        <EditProjectModal
-          key={editingProject.id}
-          project={editingProject}
-          onClose={() => setEditingProject(null)}
-          onSuccess={handleProjectUpdated}
-        />
-      )}
+function HomePage() {
+  return (
+    <div className="max-w-6xl mx-auto p-8 text-neutral-100">
+      <h1 className="text-4xl font-extrabold tracking-tight mt-12 mb-4">
+        Selamat Datang di Portofolio
+      </h1>
+      <p className="text-neutral-400 max-w-2xl text-lg">
+        Menampilkan rekayasa perangkat lunak, arsitektur backend, simulasi game, dan karya ilustrasi digital.
+      </p>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen bg-neutral-950 text-neutral-100">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/illustrations" element={<IllustrationsPage />} />
+          
+          {/* Rute Katalog Devlog Publik */}
+          <Route path="/devlogs" element={<DevlogsPage />} />
+          {/* Rute Unik Tiap Artikel berdasarkan Slug */}
+          <Route path="/devlogs/:slug" element={<DevlogDetailPage />} />
+
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }

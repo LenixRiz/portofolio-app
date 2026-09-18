@@ -1,4 +1,11 @@
-import type { Project, Devlog, Illustration, CreateProjectInput } from '../types';
+import type { 
+  Project, 
+  Devlog, 
+  Illustration, 
+  CreateProjectInput, 
+  CreateIllustrationInput,
+  CreateDevlogInput 
+} from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -49,8 +56,36 @@ export const devlogService = {
   getAll: (projectId?: string) =>
     request<Devlog[]>(`/devlogs${projectId ? `?projectId=${projectId}` : ''}`),
   getBySlug: (slug: string) => request<Devlog>(`/devlogs/${slug}`),
+  create: (data: CreateDevlogInput) =>
+    request<Devlog>('/devlogs', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  update: (id: string, data: CreateDevlogInput) =>
+    request<Devlog>(`/devlogs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string) =>
+    request<void>(`/devlogs/${id}`, {
+      method: 'DELETE',
+    }),
 };
 
 export const illustrationService = {
   getAll: () => request<Illustration[]>('/illustrations'),
+  create: (data: CreateIllustrationInput) =>
+    request<Illustration>('/illustrations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  update: (id: string, data: CreateIllustrationInput) =>
+    request<Illustration>(`/illustrations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  delete: (id: string) =>
+    request<void>(`/illustrations/${id}`, {
+      method: 'DELETE',
+    }),
 };

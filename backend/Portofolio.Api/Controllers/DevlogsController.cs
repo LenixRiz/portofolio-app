@@ -136,4 +136,122 @@ public class DevlogsController(ApplicationDbContext context) : ControllerBase
 
         return CreatedAtAction(nameof(GetDevlogBySlug), new { slug = devlog.Slug }, resultDto);
     }
+
+    // PUT: api/devlogs/{id}
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<DevlogDto>> UpdateDevlog(Guid id, UpdateDevlogDto dto)
+    {
+        var devlog = await context.Devlogs
+            .Include(d => d.Tags)
+            .Include(d => d.Project)
+            .FirstOrDefaultAsync(d => d.Id == id);
+
+        if (devlog == null)
+        {
+            return NotFound(new { message = $"Devlog dengan ID '{id}' tidak ditemukan." });
+        }
+
+        // 1. Validasi relasi Project induk jika ada perubahan
+        if (devlog.ProjectId != dto.ProjectId)
+        {
+            var projectExists = await context.Projects.AnyAsync(p => p.Id == dto.ProjectId);
+            if (!projectExists)
+            {
+                return NotFound(new { message = $"Proyek dengan ID '{dto.ProjectId}' tidak ditemukan." });
+            }
+            devlog.ProjectId = dto.ProjectId;
+        }
+
+        // 2. Sinkronisasi Slug jika judul berubah
+        var cleanTitle = dto.Title.Trim();
+        if (devlog.Title != cleanTitle)
+        {
+            var newSlug = cleanTitle.ToLower().Replace(" ", "-");
+            if (await context.Devlogs.AnyAsync(d => d.Slug == newSlug && d.Id != id))
+            {
+                return BadRequest(new { message = "Devlog dengan judul/slug tersebut sudah terdaftar." });
+            }
+            devlog.Title = cleanTitle;
+            devlog.Slug = newSlug;
+        }
+
+        devlog.Content = dto.Content.Trim();
+        devlog.IsPublished = dto.IsPublished;
+
+        // 3. Differential Tag Mutation
+        var rawInput = (dto.TagNames != null && dto.TagNames.Count > 0 ? dto.TagNames : dto.Tags) ?? new List<string>();
+        var cleanTagNames = rawInput
+            .Select(t => t.Trim().TrimStart('#').Trim())
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var targetSlugs = cleanTagNames.Select(t => t.ToLower().Replace(" ", "-")).ToHashSet();
+
+        // Hapus tag yang dicabut
+        var tagsToRemove = devlog.Tags.Where(t => !targetSlugs.Contains(t.Slug)).ToList();
+        foreach (var tag in tagsToRemove)
+        {
+            devlog.Tags.Remove(tag);
+        }
+
+        // Tambah tag baru
+        var currentSlugs = devlog.Tags.Select(t => t.Slug).ToHashSet();
+        foreach (var name in cleanTagNames)
+        {
+            var slug = name.ToLower().Replace(" ", "-");
+            if (currentSlugs.Contains(slug)) continue;
+
+            var existingTag = await context.Tags.FirstOrDefaultAsync(t => t.Slug == slug);
+            if (existingTag == null)
+            {
+                existingTag = new Tag
+                {
+                    Id = Guid.NewGuid(),
+                    Name = name,
+                    Slug = slug
+                };
+                context.Tags.Add(existingTag);
+            }
+
+            devlog.Tags.Add(existingTag);
+        }
+
+        await context.SaveChangesAsync();
+
+        // Muat judul project terbaru
+        var projectTitle = await context.Projects
+            .Where(p => p.Id == devlog.ProjectId)
+            .Select(p => p.Title)
+            .FirstOrDefaultAsync();
+
+        return Ok(new DevlogDto
+        {
+            Id = devlog.Id,
+            Title = devlog.Title,
+            Slug = devlog.Slug,
+            Content = devlog.Content,
+            IsPublished = devlog.IsPublished,
+            CreatedAt = devlog.CreatedAt,
+            ProjectId = devlog.ProjectId,
+            ProjectTitle = projectTitle,
+            Tags = devlog.Tags.Select(t => t.Name).Where(n => !string.IsNullOrWhiteSpace(n)).ToList()
+        });
+    }
+
+    // DELETE: api/devlogs/{id}
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteDevlog(Guid id)
+    {
+        var devlog = await context.Devlogs.FindAsync(id);
+        if (devlog == null)
+        {
+            return NotFound(new { message = $"Devlog dengan ID '{id}' tidak ditemukan." });
+        }
+
+        context.Devlogs.Remove(devlog);
+        await context.SaveChangesAsync();
+
+        return NoContent();
+    }
 }

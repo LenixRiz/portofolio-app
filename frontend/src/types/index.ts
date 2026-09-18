@@ -24,18 +24,6 @@ export interface Devlog {
   tags: string[];
 }
 
-export interface Illustration {
-  id: string;
-  title: string;
-  slug: string;
-  description?: string | null;
-  imageUrl: string;
-  thumbnailUrl: string;
-  completedAt?: string | null;
-  createdAt: string;
-  tags: string[];
-}
-
 export interface CreateProjectInput {
   title: string;
   summary: string;
@@ -44,5 +32,33 @@ export interface CreateProjectInput {
   repositoryUrl?: string | null;
   demoUrl?: string | null;
   isFeatured: boolean;
+  tagNames: string[];
+}
+
+export interface Illustration {
+  id: string;
+  title: string;
+  description?: string | null;
+  imageUrl: string;
+  thumbnailUrl: string;
+  completedAt?: string | null;
+  createdAt: string;
+  tags: string[];
+}
+
+export interface CreateIllustrationInput {
+  title: string;
+  description?: string | null;
+  imageUrl: string;
+  thumbnailUrl?: string;
+  completedAt?: string | null;
+  tagNames: string[];
+}
+
+export interface CreateDevlogInput {
+  title: string;
+  content: string;
+  isPublished: boolean;
+  projectId: string;
   tagNames: string[];
 }
