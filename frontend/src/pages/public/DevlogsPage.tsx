@@ -62,7 +62,7 @@ export default function DevlogsPage() {
                 </Link>
               </h2>
 
-              <p className="text-neutral-400 text-sm line-clamp-3 leading-relaxed">
+              <p className="text-neutral-400 text-sm text-justify line-clamp-3 leading-relaxed">
                 {item.content}
               </p>
             </div>

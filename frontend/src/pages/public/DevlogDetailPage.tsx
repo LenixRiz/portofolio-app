@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import 'highlight.js/styles/github-dark.css';
 import { devlogService } from '../../services/api';
 import type { Devlog } from '../../types';
 
@@ -11,8 +15,6 @@ export default function DevlogDetailPage() {
 
   useEffect(() => {
     if (!slug) return;
-
-    // Flag proteksi race condition jika user berpindah halaman dengan cepat
     let ignore = false;
 
     devlogService.getBySlug(slug)
@@ -30,17 +32,12 @@ export default function DevlogDetailPage() {
       });
 
     return () => {
-      // Batalkan pembaruan state jika komponen di-unmount sebelum fetch selesai
       ignore = true;
     };
   }, [slug]);
 
   if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto p-8 text-neutral-400">
-        Memuat artikel devlog...
-      </div>
-    );
+    return <div className="max-w-4xl mx-auto p-8 text-neutral-400">Memuat artikel devlog...</div>;
   }
 
   if (error || !devlog) {
@@ -99,8 +96,51 @@ export default function DevlogDetailPage() {
         </div>
       </header>
 
-      <div className="mt-8 text-neutral-300 leading-relaxed whitespace-pre-wrap font-sans text-base">
-        {devlog.content}
+      {/* Konten Markdown Terformat dengan Syntax Highlighting */}
+      <div className="mt-8 text-neutral-300 leading-relaxed font-sans text-sm space-y-4">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeHighlight]}
+          components={{
+            h1: ({ children }) => <h1 className="text-2xl font-bold text-white mt-8 mb-4 border-b border-neutral-800 pb-2">{children}</h1>,
+            h2: ({ children }) => <h2 className="text-xl font-bold text-white mt-6 mb-3">{children}</h2>,
+            h3: ({ children }) => <h3 className="text-lg font-semibold text-neutral-100 mt-5 mb-2">{children}</h3>,
+            p: ({ children }) => <p className="mb-4 leading-relaxed">{children}</p>,
+            ul: ({ children }) => <ul className="list-disc list-inside space-y-1 my-3 pl-2 text-neutral-300">{children}</ul>,
+            ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 my-3 pl-2 text-neutral-300">{children}</ol>,
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-indigo-500 bg-neutral-900/60 px-4 py-3 my-4 italic text-neutral-400 rounded-r-lg">
+                {children}
+              </blockquote>
+            ),
+            code: ({ className, children, ...props }) => {
+              const isInline = !className;
+              return isInline ? (
+                <code className="bg-neutral-900 text-indigo-300 font-mono text-xs px-1.5 py-0.5 rounded border border-neutral-800" {...props}>
+                  {children}
+                </code>
+              ) : (
+                <code className={`${className} font-mono text-xs leading-relaxed`} {...props}>
+                  {children}
+                </code>
+              );
+            },
+            pre: ({ children }) => (
+              <pre className="overflow-x-auto rounded-xl bg-neutral-950 border border-neutral-800 p-4 my-5 text-xs shadow-inner">
+                {children}
+              </pre>
+            ),
+            table: ({ children }) => (
+              <div className="overflow-x-auto my-6">
+                <table className="w-full text-left border-collapse border border-neutral-800 text-xs">{children}</table>
+              </div>
+            ),
+            th: ({ children }) => <th className="border border-neutral-800 bg-neutral-900 p-2.5 font-semibold text-neutral-200">{children}</th>,
+            td: ({ children }) => <td className="border border-neutral-800 p-2.5 text-neutral-400">{children}</td>,
+          }}
+        >
+          {devlog.content}
+        </ReactMarkdown>
       </div>
     </article>
   );

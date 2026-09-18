@@ -4,6 +4,7 @@ import IllustrationsPage from './pages/public/IllustrationsPage';
 import ProjectsPage from './pages/public/ProjectsPage';
 import DevlogsPage from './pages/public/DevlogsPage';
 import DevlogDetailPage from './pages/public/DevlogDetailPage';
+import Homepage from './pages/public/Homepage';
 
 function Navbar() {
   const location = useLocation();
@@ -50,34 +51,17 @@ function Navbar() {
   );
 }
 
-function HomePage() {
-  return (
-    <div className="max-w-6xl mx-auto p-8 text-neutral-100">
-      <h1 className="text-4xl font-extrabold tracking-tight mt-12 mb-4">
-        Selamat Datang di Portofolio
-      </h1>
-      <p className="text-neutral-400 max-w-2xl text-lg">
-        Menampilkan rekayasa perangkat lunak, arsitektur backend, simulasi game, dan karya ilustrasi digital.
-      </p>
-    </div>
-  );
-}
-
 export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-neutral-950 text-neutral-100">
         <Navbar />
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Homepage />} />
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/illustrations" element={<IllustrationsPage />} />
-          
-          {/* Rute Katalog Devlog Publik */}
           <Route path="/devlogs" element={<DevlogsPage />} />
-          {/* Rute Unik Tiap Artikel berdasarkan Slug */}
-          <Route path="/devlogs/:slug" element={<DevlogDetailPage />} />
-
+          <Route path="/devlogs/:slug" element={<DevlogDetailPage key={window.location.pathname} />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </div>
