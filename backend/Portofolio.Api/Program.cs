@@ -66,6 +66,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles(); // AGAR FOLDER WWWROOT/UPLOADS BISA DIAKSES PUBLIK
+
 app.UseAuthentication(); // 1. Autentikasi (Identifikasi identitas token)
 app.UseAuthorization();  // 2. Otorisasi (Evaluasi hak akses)
 

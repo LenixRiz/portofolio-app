@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { illustrationService } from '../services/api';
 import type { Illustration } from '../types';
-
+import ImageUploadField from './ImageUploadField';
 interface Props {
   onSuccess: (newArt: Illustration) => void;
 }
@@ -78,14 +78,10 @@ export default function CreateIllustrationModal({ onSuccess }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">Direct Image URL (Full-Res) *</label>
-              <input
-                type="url"
-                required
+              <ImageUploadField
+                label="Direct Image (Full-Res)"
                 value={form.imageUrl}
-                onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
-                placeholder="https://..."
+                onChange={(url) => setForm({ ...form, imageUrl: url, thumbnailUrl: form.thumbnailUrl || url })}
               />
             </div>
 

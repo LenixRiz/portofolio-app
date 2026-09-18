@@ -132,3 +132,36 @@ export const illustrationService = {
       method: 'DELETE',
     }),
 };
+
+export const uploadService = {
+  uploadImage: async (file: File): Promise<{ url: string }> => {
+    const token = localStorage.getItem('admin_token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    // Catatan: Jangan tambahkan 'Content-Type': 'application/json' 
+    // karena browser akan mengatur multipart boundary secara otomatis.
+
+    const response = await fetch(`${BASE_URL}/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/admin/login';
+    }
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || 'Gagal mengunggah gambar.');
+    }
+
+    return response.json() as Promise<{ url: string }>;
+  },
+};
