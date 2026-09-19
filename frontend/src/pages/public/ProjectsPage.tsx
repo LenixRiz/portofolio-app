@@ -10,6 +10,7 @@ export default function ProjectsPage() {
   // State filter
   const [selectedTag, setSelectedTag] = useState<string>('All');
   const [featuredOnly, setFeaturedOnly] = useState<boolean>(false);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ONGOING' | 'FINISHED'>('ALL');
 
   useEffect(() => {
     projectService.getAll()
@@ -29,11 +30,16 @@ export default function ProjectsPage() {
     ...Array.from(new Set(projects.flatMap((p) => p.tags.filter((t) => t && t.trim().length > 0)))),
   ];
 
-  // Logika pemfilteran sisi klien (Client-Side Filtering)
+  // Logika pemfilteran sisi klien yang lengkap
   const filteredProjects = projects.filter((item) => {
     const matchesTag = selectedTag === 'All' || item.tags.includes(selectedTag);
     const matchesFeatured = !featuredOnly || item.isFeatured;
-    return matchesTag && matchesFeatured;
+    const matchesStatus =
+      statusFilter === 'ALL' ||
+      (statusFilter === 'ONGOING' && item.isOnGoing) ||
+      (statusFilter === 'FINISHED' && item.isFinished);
+
+    return matchesTag && matchesFeatured && matchesStatus;
   });
 
   return (
@@ -64,22 +70,50 @@ export default function ProjectsPage() {
             ))}
           </div>
 
-          {/* Featured Toggle */}
-          <button
-            onClick={() => setFeaturedOnly(!featuredOnly)}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer shrink-0 ${
-              featuredOnly
-                ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-700'
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${featuredOnly ? 'bg-amber-400' : 'bg-neutral-600'}`} />
-            Featured Only
-          </button>
+          {/* Status & Featured Filter Group */}
+          <div className="flex gap-2 flex-wrap items-center shrink-0">
+            {/* Featured Toggle */}
+            <button
+              onClick={() => setFeaturedOnly(!featuredOnly)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                featuredOnly
+                  ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                  : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-700'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${featuredOnly ? 'bg-amber-400' : 'bg-neutral-600'}`} />
+              Featured
+            </button>
+
+            {/* On Going Toggle */}
+            <button
+              onClick={() => setStatusFilter(statusFilter === 'ONGOING' ? 'ALL' : 'ONGOING')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                statusFilter === 'ONGOING'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-700'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${statusFilter === 'ONGOING' ? 'bg-emerald-400' : 'bg-neutral-600'}`} />
+              On Going
+            </button>
+
+            {/* Finished Toggle */}
+            <button
+              onClick={() => setStatusFilter(statusFilter === 'FINISHED' ? 'ALL' : 'FINISHED')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+                statusFilter === 'FINISHED'
+                  ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30'
+                  : 'bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-700'
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${statusFilter === 'FINISHED' ? 'bg-indigo-400' : 'bg-neutral-600'}`} />
+              Finished
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* State Indicators */}
       {loading && <p className="text-neutral-400">Memuat katalog proyek...</p>}
       {error && <p className="text-red-400 bg-red-950/40 p-4 rounded border border-red-800">Error: {error}</p>}
 
@@ -87,7 +121,7 @@ export default function ProjectsPage() {
         <div className="text-center py-16 bg-neutral-900/30 rounded-2xl border border-neutral-800">
           <p className="text-neutral-400">Tidak ada proyek yang sesuai dengan kriteria filter.</p>
           <button
-            onClick={() => { setSelectedTag('All'); setFeaturedOnly(false); }}
+            onClick={() => { setSelectedTag('All'); setFeaturedOnly(false); setStatusFilter('ALL'); }}
             className="mt-3 text-xs text-indigo-400 hover:underline cursor-pointer"
           >
             Reset Filter
@@ -103,7 +137,6 @@ export default function ProjectsPage() {
             className="flex flex-col justify-between overflow-hidden rounded-xl bg-neutral-900/60 border border-neutral-800 hover:border-neutral-700 transition-all hover:-translate-y-0.5"
           >
             <div>
-              {/* Gambar Thumbnail Proyek */}
               <div className="relative aspect-video w-full overflow-hidden bg-neutral-950 border-b border-neutral-800">
                 <img
                   src={item.thumbnailUrl || 'https://placehold.co/600x400/171717/737373?text=No+Image'}
@@ -119,24 +152,35 @@ export default function ProjectsPage() {
                 />
               </div>
 
-              {/* Konten Utama */}
               <div className="p-5">
-                <div className="flex items-center justify-between gap-2 mb-2">
+                {/* Header Judul & Badges Terpadu */}
+                <div className="flex items-start justify-between gap-2 mb-2">
                   <h2 className="text-lg font-semibold text-neutral-100 line-clamp-1">{item.title}</h2>
-                  {item.isFeatured && (
-                    <span className="text-[10px] font-semibold tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase shrink-0">
-                      Featured
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+                    {item.isFeatured && (
+                      <span className="text-[10px] font-semibold tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase">
+                        Featured
+                      </span>
+                    )}
+                    {item.isOnGoing && (
+                      <span className="text-[10px] font-semibold tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase">
+                        In Progress
+                      </span>
+                    )}
+                    {item.isFinished && (
+                      <span className="text-[10px] font-semibold tracking-wide bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase">
+                        Completed
+                      </span>
+                    )}
+                  </div>
                 </div>
+
                 <p className="text-neutral-400 text-sm line-clamp-3 mb-4 leading-relaxed">{item.summary}</p>
               </div>
             </div>
 
-            {/* Footer Kartu: Tags & Tombol Aksi Eksternal */}
             <div className="p-5 pt-0">
               <div className="pt-4 border-t border-neutral-800/80 space-y-4">
-                {/* Tag Pills */}
                 <div className="flex gap-1.5 flex-wrap">
                   {item.tags
                     .filter((tag) => tag && tag.trim().length > 0)
@@ -150,7 +194,6 @@ export default function ProjectsPage() {
                     ))}
                 </div>
 
-                {/* External Action Links (GitHub / Demo) */}
                 <div className="flex items-center gap-2 pt-1">
                   {item.repositoryUrl && (
                     <a

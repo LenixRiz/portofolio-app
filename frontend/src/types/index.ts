@@ -8,6 +8,8 @@ export interface Project {
   repositoryUrl?: string | null;
   demoUrl?: string | null;
   isFeatured: boolean;
+  isOnGoing: boolean;
+  isFinished: boolean;
   createdAt: string;
   tags: string[];
 }
@@ -32,6 +34,8 @@ export interface CreateProjectInput {
   repositoryUrl?: string | null;
   demoUrl?: string | null;
   isFeatured: boolean;
+  isOnGoing: boolean;
+  isFinished: boolean;
   tagNames: string[];
 }
 

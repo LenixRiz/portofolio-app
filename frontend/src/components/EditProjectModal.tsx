@@ -21,6 +21,8 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
     repositoryUrl: project.repositoryUrl || '',
     demoUrl: project.demoUrl || '',
     isFeatured: project.isFeatured,
+    isOnGoing: project.isOnGoing,
+    isFinished: project.isFinished,
     tagsInput: project.tags.join(', '),
   });
   
@@ -44,6 +46,8 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
         repositoryUrl: form.repositoryUrl.trim() || null,
         demoUrl: form.demoUrl.trim() || null,
         isFeatured: form.isFeatured,
+        isOnGoing: form.isOnGoing,
+        isFinished: form.isFinished,
         tagNames,
       });
 
@@ -150,6 +154,46 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
             />
             <label htmlFor="editFeatured" className="text-sm text-neutral-300 cursor-pointer">
               Tandai sebagai Proyek Utama (Featured)
+            </label>
+          </div>
+
+          {/* Checkbox On Going */}
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="isOnGoing"
+              checked={form.isOnGoing}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  isOnGoing: e.target.checked,
+                  isFinished: e.target.checked ? false : form.isFinished, // Otomatis lepas Finished jika On Going aktif
+                })
+              }
+              className="rounded bg-neutral-950 border-neutral-800 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+            />
+            <label htmlFor="isOnGoing" className="text-sm text-neutral-300 cursor-pointer">
+              Tandai sebagai Proyek Berjalan (On Going)
+            </label>
+          </div>
+
+          {/* Checkbox Finished */}
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="checkbox"
+              id="isFinished"
+              checked={form.isFinished}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  isFinished: e.target.checked,
+                  isOnGoing: e.target.checked ? false : form.isOnGoing, // Otomatis lepas On Going jika Finished aktif
+                })
+              }
+              className="rounded bg-neutral-950 border-neutral-800 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+            />
+            <label htmlFor="isFinished" className="text-sm text-neutral-300 cursor-pointer">
+              Tandai sebagai Proyek Selesai (Finished)
             </label>
           </div>
 

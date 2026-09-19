@@ -9,6 +9,8 @@ public class UpdateProjectDto
     public string? RepositoryUrl { get; set; }
     public string? DemoUrl { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsOnGoing { get; set; }
+    public bool IsFinished { get; set; }
 
     public List<string> TagNames { get; set; } = new();
     public List<string>? Tags { get; set; } // Fallback jika payload dikirim dengan nama "tags"

@@ -15,6 +15,8 @@ public class CreateProjectDto
     public string? RepositoryUrl { get; set; }
     public string? DemoUrl { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsOnGoing { get; set; }
+    public bool IsFinished { get; set; }
 
     public List<string> TagNames { get; set; } = new();
 }

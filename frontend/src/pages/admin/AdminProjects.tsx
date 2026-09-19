@@ -70,28 +70,40 @@ export default function App() {
       <div>
         {/* Kontainer Gambar Thumbnail dengan Aspect Ratio & Fallback */}
         <div className="relative aspect-video w-full overflow-hidden bg-neutral-950 border-b border-neutral-800">
-        <img
-          src={item.thumbnailUrl || 'https://placehold.co/600x400/171717/737373?text=No+Image'}
-          alt={item.title}
-          referrerPolicy="no-referrer"
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-          onError={(e) => {
-            const img = e.currentTarget as HTMLImageElement;
-            img.onerror = null; // Putus loop render jika fallback gagal
-            img.src = 'https://placehold.co/600x400/171717/ef4444?text=Invalid+Image+URL';
-          }}
-        />
-      </div>
+          <img
+            src={item.thumbnailUrl || 'https://placehold.co/600x400/171717/737373?text=No+Image'}
+            alt={item.title}
+            referrerPolicy="no-referrer"
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            onError={(e) => {
+              const img = e.currentTarget as HTMLImageElement;
+              img.onerror = null; // Putus loop render jika fallback gagal
+              img.src = 'https://placehold.co/600x400/171717/ef4444?text=Invalid+Image+URL';
+            }}
+          />
+        </div>
 
         <div className="p-5">
-          <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-start justify-between gap-2 mb-2">
             <h2 className="text-lg font-semibold text-neutral-100 line-clamp-1">{item.title}</h2>
-            {item.isFeatured && (
-              <span className="text-[10px] font-semibold tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase">
-                Featured
-              </span>
-            )}
+            <div className="flex items-center gap-1.5 flex-wrap shrink-0 justify-end">
+              {item.isFeatured && (
+                <span className="text-[10px] font-semibold tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase">
+                  Featured
+                </span>
+              )}
+              {item.isOnGoing && (
+                <span className="text-[10px] font-semibold tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase">
+                  On Going
+                </span>
+              )}
+              {item.isFinished && (
+                <span className="text-[10px] font-semibold tracking-wide bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase">
+                  Finished
+                </span>
+              )}
+            </div>
           </div>
           <p className="text-neutral-400 text-sm line-clamp-2 mb-4">{item.summary}</p>
         </div>

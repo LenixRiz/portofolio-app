@@ -29,6 +29,8 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
                 RepositoryUrl = p.RepositoryUrl,
                 DemoUrl = p.DemoUrl,
                 IsFeatured = p.IsFeatured,
+                IsOnGoing = p.IsOnGoing,
+                IsFinished = p.IsFinished,
                 CreatedAt = p.CreatedAt,
                 Tags = p.Tags.Select(t => t.Name).ToList()
             })
@@ -57,7 +59,9 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
             ThumbnailUrl = dto.ThumbnailUrl.Trim(),
             RepositoryUrl = string.IsNullOrWhiteSpace(dto.RepositoryUrl) ? null : dto.RepositoryUrl.Trim(),
             DemoUrl = string.IsNullOrWhiteSpace(dto.DemoUrl) ? null : dto.DemoUrl.Trim(),
-            IsFeatured = dto.IsFeatured
+            IsFeatured = dto.IsFeatured,
+            IsOnGoing = dto.IsOnGoing,
+            IsFinished = dto.IsFinished,
         };
 
         // Sanitasi input: buang '#', hapus spasi, filter teks kosong
@@ -98,6 +102,8 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
             RepositoryUrl = project.RepositoryUrl,
             DemoUrl = project.DemoUrl,
             IsFeatured = project.IsFeatured,
+            IsOnGoing = project.IsOnGoing,
+            IsFinished = project.IsFinished,
             CreatedAt = project.CreatedAt,
             Tags = project.Tags.Select(t => t.Name).ToList()
         };
@@ -126,6 +132,8 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
         project.RepositoryUrl = string.IsNullOrWhiteSpace(dto.RepositoryUrl) ? null : dto.RepositoryUrl.Trim();
         project.DemoUrl = string.IsNullOrWhiteSpace(dto.DemoUrl) ? null : dto.DemoUrl.Trim();
         project.IsFeatured = dto.IsFeatured;
+        project.IsOnGoing = dto.IsOnGoing;
+        project.IsFinished = dto.IsFinished;
 
         // Ambil input dan sanitasi ketat simbol '#' serta spasi kosong
         var rawInput = (dto.TagNames != null && dto.TagNames.Count > 0 ? dto.TagNames : dto.Tags) ?? new List<string>();
@@ -186,6 +194,8 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
             RepositoryUrl = project.RepositoryUrl,
             DemoUrl = project.DemoUrl,
             IsFeatured = project.IsFeatured,
+            IsOnGoing = project.IsOnGoing,
+            IsFinished = project.IsFinished,
             CreatedAt = project.CreatedAt,
             Tags = project.Tags
                 .Select(t => t.Name)
