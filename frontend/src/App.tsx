@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import IllustrationsPage from './pages/public/IllustrationsPage';
@@ -16,57 +17,177 @@ import Footer from './components/Footer';
 
 function Navbar() {
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Helper pemeriksa rute aktif cerdas (mendukung sub-rute slug)
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/';
+    return location.pathname.startsWith(path);
+  };
 
   return (
-    <nav className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
-        <Link to="/" className="font-bold text-lg text-neutral-100 hover:text-white">
-          CreatedByLenix<span className="text-indigo-500">.</span>
+    <nav className="border-b border-neutral-800/80 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-40">
+      <div className="max-w-6xl mx-auto px-6 sm:px-8 h-16 flex items-center justify-between">
+        
+        {/* Logo Branding */}
+        <Link 
+          to="/" 
+          onClick={() => setMobileMenuOpen(false)}
+          className="font-bold text-lg text-white hover:text-neutral-200 transition-colors tracking-tight flex items-center gap-1"
+        >
+          <span>CreatedByLenix</span>
+          <span className="text-indigo-500 font-mono">.</span>
         </Link>
-        <div className="flex items-center gap-6 text-sm">
+
+        {/* Desktop Navigation Links */}
+        <div className="hidden md:flex items-center gap-7 text-xs sm:text-sm font-medium">
           <Link
             to="/projects"
-            className={`${location.pathname === '/projects' ? 'text-white font-medium' : 'text-neutral-400 hover:text-neutral-200'}`}
+            className={`transition-colors ${
+              isActive('/projects') ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'
+            }`}
           >
             Projects
           </Link>
+
           <Link
             to="/illustrations"
-            className={`${location.pathname === '/illustrations' ? 'text-white font-medium' : 'text-neutral-400 hover:text-neutral-200'}`}
+            className={`transition-colors ${
+              isActive('/illustrations') ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'
+            }`}
           >
-            Art & Illustrations
+            Art
           </Link>
+
           <Link
             to="/devlogs"
-            className={`${location.pathname === '/devlogs' ? 'text-white font-medium' : 'text-neutral-400 hover:text-neutral-200'}`}
+            className={`transition-colors ${
+              isActive('/devlogs') ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'
+            }`}
           >
             Devlogs
           </Link>
+
           <Link
             to="/contact"
-            className={`${location.pathname === '/contact' ? 'text-white font-medium' : 'text-neutral-400 hover:text-neutral-200'}`}
+            className={`transition-colors ${
+              isActive('/contact') ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'
+            }`}
           >
             Contact
           </Link>
+
           <Link
             to="/about"
-            className={`${location.pathname === '/about' ? 'text-white font-medium' : 'text-neutral-400 hover:text-neutral-200'}`}
+            className={`transition-colors ${
+              isActive('/about') ? 'text-white' : 'text-neutral-400 hover:text-neutral-200'
+            }`}
           >
             About
           </Link>
+
+          {/* Global Search Button */}
           <Link
             to="/search"
-            aria-label="Search"
-            className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-900 rounded-lg transition-colors cursor-pointer"
+            aria-label="Global Search"
             title="Global Search"
+            className={`p-2 rounded-xl border transition-all cursor-pointer ${
+              isActive('/search')
+                ? 'bg-neutral-900 border-indigo-500/50 text-indigo-400'
+                : 'border-neutral-800/80 bg-neutral-900/40 text-neutral-400 hover:text-white hover:border-neutral-700'
+            }`}
           >
-            <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
+              <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
             </svg>
           </Link>
         </div>
+
+        {/* Mobile Actions: Search & Hamburger Toggle */}
+        <div className="flex items-center gap-3 md:hidden">
+          <Link
+            to="/search"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Search"
+            className="p-2 text-neutral-400 hover:text-white"
+          >
+            <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
+            </svg>
+          </Link>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-neutral-400 hover:text-white cursor-pointer rounded-lg focus:outline-none"
+            aria-label="Toggle Navigation Menu"
+          >
+            <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        </div>
+
       </div>
+
+      {/* Mobile Menu Dropdown Drawer */}
+      {/* Cukup berikan onClick pada kontainer ini agar setiap klik di dalam menu otomatis menutup drawer */}
+      {mobileMenuOpen && (
+        <div 
+          onClick={() => setMobileMenuOpen(false)}
+          className="md:hidden border-b border-neutral-800 bg-neutral-950/95 px-6 py-5 space-y-4 text-sm font-medium"
+        >
+          <Link
+            to="/projects"
+            className={`block py-1.5 transition-colors ${
+              isActive('/projects') ? 'text-indigo-400 font-semibold' : 'text-neutral-300'
+            }`}
+          >
+            Projects
+          </Link>
+
+          <Link
+            to="/illustrations"
+            className={`block py-1.5 transition-colors ${
+              isActive('/illustrations') ? 'text-indigo-400 font-semibold' : 'text-neutral-300'
+            }`}
+          >
+            Art
+          </Link>
+
+          <Link
+            to="/devlogs"
+            className={`block py-1.5 transition-colors ${
+              isActive('/devlogs') ? 'text-indigo-400 font-semibold' : 'text-neutral-300'
+            }`}
+          >
+            Devlogs
+          </Link>
+
+          <Link
+            to="/contact"
+            className={`block py-1.5 transition-colors ${
+              isActive('/contact') ? 'text-indigo-400 font-semibold' : 'text-neutral-300'
+            }`}
+          >
+            Contact
+          </Link>
+
+          <Link
+            to="/about"
+            className={`block py-1.5 transition-colors ${
+              isActive('/about') ? 'text-indigo-400 font-semibold' : 'text-neutral-300'
+            }`}
+          >
+            About
+          </Link>
+        </div>
+      )}
     </nav>
   );
 }
@@ -74,8 +195,8 @@ function Navbar() {
 export default function App() {
   return (
     <BrowserRouter>
-      {/* Layout Pembungkus dengan Flexbox agar Footer selalu rapi di bawah */}
-      <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between">
+      {/* Wrapper Layout Bersih dengan Flexbox */}
+      <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between selection:bg-indigo-600 selection:text-white">
         <div>
           <Navbar />
           <main>
@@ -88,10 +209,9 @@ export default function App() {
               <Route path="/devlogs/:slug" element={<DevlogDetailPage key={window.location.pathname} />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/about" element={<AboutPage />} />
-
               <Route path="/search" element={<SearchPage />} />
               <Route path="/tags/:slug" element={<TagExplorerPage key={window.location.pathname} />} />
-
+              
               {/* Rute CMS Admin */}
               <Route path="/admin/login" element={<LoginPage />} />
               <Route element={<ProtectedRoute />}>
@@ -101,7 +221,7 @@ export default function App() {
           </main>
         </div>
 
-        {/* 2. Pasang Footer di sini */}
+        {/* Global Footer */}
         <Footer />
       </div>
     </BrowserRouter>
