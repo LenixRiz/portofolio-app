@@ -12,17 +12,16 @@ import type {
   TagSummary
 } from '../types';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem('admin_token');
-  
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options?.headers,
   };
 
-  // Sisipkan token JWT jika tersimpan di local storage
+  // Attach JWT Bearer token if present in local storage
   if (token) {
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
@@ -32,7 +31,7 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     headers,
   });
 
-  // Jika server mengembalikan 401 Unauthorized, bersihkan token kadaluarsa
+  // Automatically clear expired session on 401 Unauthorized
   if (response.status === 401) {
     localStorage.removeItem('admin_token');
     if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
@@ -40,29 +39,24 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     }
   }
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`API Error [${response.status}]: ${errorBody || response.statusText}`);
-  }
-
+  // Unified error handling with JSON response parsing
   if (!response.ok) {
     const errorText = await response.text();
     let extractedMessage = errorText;
 
-    // Coba uraikan isi JSON jika server mengirimkan objek error terstruktur
     try {
       const parsed = JSON.parse(errorText);
       if (parsed.message) {
         extractedMessage = parsed.message;
       }
     } catch {
-      // Biarkan extractedMessage berupa errorText mentah jika bukan format JSON
+      // Retain raw errorText if response is not valid JSON
     }
 
-    throw new Error(extractedMessage || `Permintaan gagal dengan status ${response.status}`);
+    throw new Error(extractedMessage || `Request failed with HTTP status ${response.status}`);
   }
 
-  // Tangani respons 204 No Content (saat DELETE)
+  // Handle 204 No Content responses (common on DELETE or empty operations)
   if (response.status === 204) {
     return {} as T;
   }
@@ -80,20 +74,22 @@ export const authService = {
 
     if (!res.ok) {
       const err = await res.text();
-      throw new Error(err || 'Gagal login.');
+      throw new Error(err || 'Authentication failed. Please verify your credentials.');
     }
 
     const data: { token: string; expiresAt: string } = await res.json();
     localStorage.setItem('admin_token', data.token);
     return data;
   },
+
   logout: () => {
     localStorage.removeItem('admin_token');
     window.location.href = '/admin/login';
   },
+
   isAuthenticated: () => {
     return !!localStorage.getItem('admin_token');
-  }
+  },
 };
 
 export const projectService = {
@@ -104,13 +100,11 @@ export const projectService = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
-  // PUT untuk update data proyek
   update: (id: string, data: CreateProjectInput) =>
     request<Project>(`/projects/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
-  // DELETE untuk menghapus proyek
   delete: (id: string) =>
     request<void>(`/projects/${id}`, {
       method: 'DELETE',
@@ -165,8 +159,6 @@ export const uploadService = {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    // Catatan: Jangan tambahkan 'Content-Type': 'application/json' 
-    // karena browser akan mengatur multipart boundary secara otomatis.
 
     const response = await fetch(`${BASE_URL}/upload`, {
       method: 'POST',
@@ -181,7 +173,7 @@ export const uploadService = {
 
     if (!response.ok) {
       const err = await response.text();
-      throw new Error(err || 'Gagal mengunggah gambar.');
+      throw new Error(err || 'Failed to upload image file.');
     }
 
     return response.json() as Promise<{ url: string }>;
@@ -218,7 +210,6 @@ export const tagService = {
 export const cvService = {
   getStatus: () =>
     request<{ url: string; updatedAt: string }>('/upload/cv'),
-
   upload: async (file: File): Promise<{ url: string; updatedAt: string }> => {
     const token = localStorage.getItem('admin_token');
     const formData = new FormData();
@@ -242,7 +233,7 @@ export const cvService = {
 
     if (!response.ok) {
       const err = await response.text();
-      throw new Error(err || 'Gagal mengunggah CV.');
+      throw new Error(err || 'Failed to upload CV document.');
     }
 
     return response.json();

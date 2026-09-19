@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import ScrollToTop from './components/ScrollToTop';
+import NotFoundPage from './pages/public/NotFoundPage';
 import IllustrationsPage from './pages/public/IllustrationsPage';
 import ProjectsPage from './pages/public/ProjectsPage';
 import ProjectDetailPage from './pages/public/ProjectDetailPage';
@@ -195,6 +197,7 @@ function Navbar() {
 export default function App() {
   return (
     <BrowserRouter>
+    <ScrollToTop />
       {/* Wrapper Layout Bersih dengan Flexbox */}
       <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between selection:bg-indigo-600 selection:text-white">
         <div>
@@ -217,6 +220,9 @@ export default function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/admin" element={<AdminDashboard />} />
               </Route>
+
+              {/* Rute wildcard 404 di urutan paling akhir */}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
         </div>
