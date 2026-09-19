@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
 using Portofolio.Application.Common.Interfaces;
 using Portofolio.Application.DTOs.Messages;
 using Portofolio.Domain.Entities;
@@ -13,6 +14,7 @@ namespace Portofolio.Api.Controllers;
 public class MessagesController(ApplicationDbContext context, IEmailService emailService) : ControllerBase
 {
     // POST: api/messages (Publik - Pengunjung mengirim inquiry)
+    [EnableRateLimiting("contact-form-limit")]
     [HttpPost]
     public async Task<ActionResult<ContactMessageDto>> SendMessage(CreateContactMessageDto dto)
     {

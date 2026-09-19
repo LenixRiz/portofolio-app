@@ -45,6 +45,23 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     throw new Error(`API Error [${response.status}]: ${errorBody || response.statusText}`);
   }
 
+  if (!response.ok) {
+    const errorText = await response.text();
+    let extractedMessage = errorText;
+
+    // Coba uraikan isi JSON jika server mengirimkan objek error terstruktur
+    try {
+      const parsed = JSON.parse(errorText);
+      if (parsed.message) {
+        extractedMessage = parsed.message;
+      }
+    } catch {
+      // Biarkan extractedMessage berupa errorText mentah jika bukan format JSON
+    }
+
+    throw new Error(extractedMessage || `Permintaan gagal dengan status ${response.status}`);
+  }
+
   // Tangani respons 204 No Content (saat DELETE)
   if (response.status === 204) {
     return {} as T;

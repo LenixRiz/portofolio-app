@@ -1,4 +1,6 @@
 using System.Text;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -53,6 +55,39 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Konfigurasi Policy Rate Limiting
+builder.Services.AddRateLimiter(options =>
+{
+    // Status kode ketika limit terlampaui
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Respon JSON yang rapi dan informatif saat diblokir
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.ContentType = "application/json";
+        await context.HttpContext.Response.WriteAsync(
+            "{\"message\": \"Terlalu banyak permintaan pengiriman pesan. Mohon tunggu beberapa menit sebelum mencoba kembali.\"}",
+            token);
+    };
+
+    // Kebijakan khusus formulir kontak: Maksimal 3 request per 10 menit per IP
+    options.AddPolicy("contact-form-limit", httpContext =>
+    {
+        // Ambil IP klien (kompatibel dengan reverse proxy Docker/Nginx nanti)
+        var clientIp = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+                       ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                       ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 3,
+            Window = TimeSpan.FromMinutes(10),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0 // Langsung tolak tanpa antrean memori
+        });
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -69,6 +104,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseRateLimiter();
 
 app.UseStaticFiles(); // AGAR FOLDER WWWROOT/UPLOADS BISA DIAKSES PUBLIK
 
