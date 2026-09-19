@@ -52,6 +52,13 @@ export default function HomePage() {
           >
             Galeri Seni
           </Link>
+          {/* CTA Kontak di Hero */}
+          <Link
+            to="/contact"
+            className="px-5 py-2.5 rounded-xl bg-neutral-900/60 hover:bg-neutral-800 text-indigo-400 border border-indigo-500/30 text-sm font-medium transition-colors cursor-pointer hover:border-indigo-500/60"
+          >
+            Hubungi Saya ✉️
+          </Link>
         </div>
       </section>
 
@@ -143,6 +150,33 @@ export default function HomePage() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Bottom Conversion CTA Banner */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-neutral-900/90 to-neutral-950 border border-neutral-800 p-8 sm:p-12 text-center space-y-6 shadow-2xl">
+        {/* Efek Ambient Glow Halus di Latar Belakang */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 space-y-3 max-w-xl mx-auto">
+          <span className="text-[11px] font-mono tracking-widest text-indigo-400 uppercase bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-full">
+            Available for Work & Commission
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight pt-2">
+            Tertarik Berkolaborasi atau Memesan Karya?
+          </h2>
+          <p className="text-neutral-400 text-sm leading-relaxed">
+            Terbuka untuk diskusi rekayasa backend .NET, pengembangan game, maupun komisi desain karakter dan artwork orisinal.
+          </p>
+        </div>
+
+        <div className="relative z-10 pt-2">
+          <Link
+            to="/contact"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-950/60 hover:shadow-indigo-500/20 hover:-translate-y-0.5 cursor-pointer"
+          >
+            Kirim Pesan Inquiry Sekarang →
+          </Link>
+        </div>
       </section>
 
       {/* Recent Engineering Devlogs */}

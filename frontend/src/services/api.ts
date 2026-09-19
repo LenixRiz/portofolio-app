@@ -4,7 +4,9 @@ import type {
   Illustration, 
   CreateProjectInput, 
   CreateIllustrationInput,
-  CreateDevlogInput 
+  CreateDevlogInput, 
+  ContactMessage,
+  CreateContactMessageInput
 } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -164,4 +166,21 @@ export const uploadService = {
 
     return response.json() as Promise<{ url: string }>;
   },
+};
+
+export const messageService = {
+  send: (data: CreateContactMessageInput) =>
+    request<ContactMessage>('/messages', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  getAll: () => request<ContactMessage[]>('/messages'),
+  toggleRead: (id: string) =>
+    request<{ isRead: boolean }>(`/messages/${id}/toggle-read`, {
+      method: 'PATCH',
+    }),
+  delete: (id: string) =>
+    request<void>(`/messages/${id}`, {
+      method: 'DELETE',
+    }),
 };

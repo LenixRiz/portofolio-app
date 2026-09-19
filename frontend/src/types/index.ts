@@ -62,3 +62,24 @@ export interface CreateDevlogInput {
   projectId: string;
   tagNames: string[];
 }
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  category: string;
+  message: string;
+  budget?: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface CreateContactMessageInput {
+  name: string;
+  email: string;
+  subject: string;
+  category: string;
+  message: string;
+  budget?: string | null;
+}

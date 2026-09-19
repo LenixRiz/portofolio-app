@@ -15,6 +15,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Devlog> Devlogs => Set<Devlog>();
     public DbSet<Illustration> Illustrations => Set<Illustration>();
     public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

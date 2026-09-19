@@ -2,6 +2,8 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Portofolio.Application.Common.Interfaces;
+using Portofolio.Infrastructure.Services;
 using Portofolio.Infrastructure.Persistence;
 using Scalar.AspNetCore;
 
@@ -20,6 +22,8 @@ builder.Services.AddOpenApi();
 // Konfigurasi JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"] 
     ?? throw new InvalidOperationException("JWT Key belum dikonfigurasi di appsettings.json");
+
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
