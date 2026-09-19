@@ -21,7 +21,7 @@ function Navbar() {
     <nav className="border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
         <Link to="/" className="font-bold text-lg text-neutral-100 hover:text-white">
-          Portfolio<span className="text-indigo-500">.</span>
+          CreatedByLenix<span className="text-indigo-500">.</span>
         </Link>
         <div className="flex items-center gap-6 text-sm">
           <Link

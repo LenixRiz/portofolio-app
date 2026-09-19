@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { projectService, illustrationService, devlogService } from '../../services/api';
+import { projectService, illustrationService, devlogService, cvService } from '../../services/api';
 import type { Project, Illustration, Devlog } from '../../types';
 
 export default function HomePage() {
@@ -9,17 +9,25 @@ export default function HomePage() {
   const [recentDevlogs, setRecentDevlogs] = useState<Devlog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // State untuk CV dan PDF Preview Modal
+  const [cvUrl, setCvUrl] = useState<string | null>(null);
+  const [showPdfModal, setShowPdfModal] = useState<boolean>(false);
+
   useEffect(() => {
     // Eksekusi pemuatan data secara paralel (Optimasi Non-Blocking)
     Promise.all([
       projectService.getAll(),
       illustrationService.getAll(),
       devlogService.getAll(),
+      cvService.getStatus().catch(() => null), // Tangkap error jika CV belum diunggah agar tidak menggagalkan query lain
     ])
-      .then(([projectsData, artData, devlogsData]) => {
+      .then(([projectsData, artData, devlogsData, cvData]) => {
         setFeaturedProjects(projectsData.filter((p) => p.isFeatured).slice(0, 3));
         setRecentArt(artData.slice(0, 4));
         setRecentDevlogs(devlogsData.filter((d) => d.isPublished).slice(0, 3));
+        if (cvData?.url) {
+          setCvUrl(cvData.url);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -27,7 +35,7 @@ export default function HomePage() {
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-12 space-y-20">
-      {/* Hero Section */}
+      {/* 1. Hero Section */}
       <section className="space-y-6 pt-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
           <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
@@ -39,7 +47,7 @@ export default function HomePage() {
         <p className="text-neutral-400 text-base sm:text-lg max-w-2xl leading-relaxed">
           Kumpulan karya rekayasa perangkat lunak, arsitektur backend berbasis Clean Architecture, simulasi game Unity, dan portofolio ilustrasi karakter digital.
         </p>
-        <div className="flex gap-4 pt-2">
+        <div className="flex flex-wrap gap-4 pt-2">
           <Link
             to="/projects"
             className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-colors cursor-pointer"
@@ -52,7 +60,6 @@ export default function HomePage() {
           >
             Galeri Seni
           </Link>
-          {/* CTA Kontak di Hero */}
           <Link
             to="/contact"
             className="px-5 py-2.5 rounded-xl bg-neutral-900/60 hover:bg-neutral-800 text-indigo-400 border border-indigo-500/30 text-sm font-medium transition-colors cursor-pointer hover:border-indigo-500/60"
@@ -62,7 +69,63 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Projects Reel */}
+      {/* 2. SECTION MINI ABOUT ME */}
+      <section className="rounded-2xl bg-neutral-900/40 border border-neutral-800 p-6 sm:p-8 space-y-6 shadow-xl relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono uppercase tracking-widest text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-full">
+                About the Creator
+              </span>
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">
+              Software Engineer & Visual Illustrator
+            </h2>
+            <p className="text-neutral-300 text-sm leading-relaxed">
+              Fokus mendalam pada arsitektur backend <strong>.NET 9 (ASP.NET Core, EF Core, PostgreSQL)</strong>, mekanik game 2D di <strong>Unity</strong>, serta penciptaan seni ilustrasi digital dan desain karakter orisinal. Memadukan presisi rekayasa kode dengan kreativitas visual.
+            </p>
+            <div className="flex gap-2 flex-wrap pt-2">
+              {['.NET 9', 'C#', 'PostgreSQL', 'Clean Architecture', 'Unity 2D', 'Clip Studio Paint'].map((badge) => (
+                <span key={badge} className="text-[11px] font-mono text-neutral-400 bg-neutral-950 border border-neutral-800 px-2.5 py-1 rounded-md">
+                  {badge}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons: Preview CV, Download, & Full About */}
+          <div className="flex flex-col sm:flex-row md:flex-col gap-3 shrink-0">
+            {cvUrl && (
+              <button
+                onClick={() => setShowPdfModal(true)}
+                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-950/60"
+              >
+                <span>Preview CV (PDF) 📄</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-2">
+              {cvUrl && (
+                <a
+                  href={cvUrl}
+                  download="CV_Resume.pdf"
+                  className="flex-1 text-center px-4 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-neutral-800 text-xs font-medium transition-colors"
+                >
+                  Unduh ⬇
+                </a>
+              )}
+              <Link
+                to="/about"
+                className="flex-1 text-center px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-medium transition-colors"
+              >
+                Selengkapnya →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Featured Projects Reel */}
       <section className="space-y-6">
         <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
           <div>
@@ -84,7 +147,6 @@ export default function HomePage() {
                 className="group flex flex-col justify-between overflow-hidden rounded-xl bg-neutral-900/40 border border-neutral-800 hover:border-neutral-700 transition-all hover:-translate-y-0.5"
               >
                 <div>
-                  {/* Wadah Thumbnail Proyek */}
                   <Link
                     to={`/projects/${item.slug}`}
                     className="block relative aspect-video w-full overflow-hidden bg-neutral-950 border-b border-neutral-800"
@@ -97,13 +159,11 @@ export default function HomePage() {
                         loading="lazy"
                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => {
-                          // Sembunyikan gambar jika broken link agar fallback di belakangnya muncul
                           (e.currentTarget as HTMLElement).style.display = 'none';
                         }}
                       />
                     ) : null}
 
-                    {/* Native Placeholder "In Development" (Muncul saat thumbnailUrl kosong atau gagal dimuat) */}
                     {(!item.thumbnailUrl || item.thumbnailUrl.trim().length === 0) && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-gradient-to-b from-neutral-900/70 to-neutral-950 text-neutral-400 select-none">
                         <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono">
@@ -144,7 +204,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Latest Illustrations Preview */}
+      {/* 4. Latest Illustrations Preview */}
       <section className="space-y-6">
         <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
           <div>
@@ -182,34 +242,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* Bottom Conversion CTA Banner */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-neutral-900/90 to-neutral-950 border border-neutral-800 p-8 sm:p-12 text-center space-y-6 shadow-2xl">
-        {/* Efek Ambient Glow Halus di Latar Belakang */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 space-y-3 max-w-xl mx-auto">
-          <span className="text-[11px] font-mono tracking-widest text-indigo-400 uppercase bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-full">
-            Available for Work & Commission
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight pt-2">
-            Tertarik Berkolaborasi atau Memesan Karya?
-          </h2>
-          <p className="text-neutral-400 text-sm leading-relaxed">
-            Terbuka untuk diskusi rekayasa backend .NET, pengembangan game, maupun komisi desain karakter dan artwork orisinal.
-          </p>
-        </div>
-
-        <div className="relative z-10 pt-2">
-          <Link
-            to="/contact"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-950/60 hover:shadow-indigo-500/20 hover:-translate-y-0.5 cursor-pointer"
-          >
-            Kirim Pesan Inquiry Sekarang →
-          </Link>
-        </div>
-      </section>
-
-      {/* Recent Engineering Devlogs */}
+      {/* 5. Recent Engineering Devlogs */}
       <section className="space-y-6">
         <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
           <div>
@@ -246,6 +279,73 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {/* 6. Bottom Conversion CTA Banner */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-neutral-900/90 to-neutral-950 border border-neutral-800 p-8 sm:p-12 text-center space-y-6 shadow-2xl">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 space-y-3 max-w-xl mx-auto">
+          <span className="text-[11px] font-mono tracking-widest text-indigo-400 uppercase bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-full">
+            Available for Work & Commission
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight pt-2">
+            Tertarik Berkolaborasi atau Memesan Karya?
+          </h2>
+          <p className="text-neutral-400 text-sm leading-relaxed">
+            Terbuka untuk diskusi rekayasa backend .NET, pengembangan game, maupun komisi desain karakter dan artwork orisinal.
+          </p>
+        </div>
+        <div className="relative z-10 pt-2">
+          <Link
+            to="/contact"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-all shadow-lg shadow-indigo-950/60 hover:shadow-indigo-500/20 hover:-translate-y-0.5 cursor-pointer"
+          >
+            Kirim Pesan Inquiry Sekarang →
+          </Link>
+        </div>
+      </section>
+
+      {/* 7. MODAL NATIVE PDF READER (Terpanggil saat tombol Preview CV ditekan) */}
+      {showPdfModal && cvUrl && (
+        <div
+          onClick={() => setShowPdfModal(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-5xl h-[88vh] flex flex-col shadow-2xl overflow-hidden cursor-default"
+          >
+            {/* Header Modal */}
+            <div className="flex items-center justify-between px-6 py-3.5 border-b border-neutral-800 bg-neutral-950">
+              <div className="flex items-center gap-3">
+                <span className="font-bold text-white text-sm">Curriculum Vitae Preview</span>
+                <a
+                  href={cvUrl}
+                  download="CV_Resume.pdf"
+                  className="text-xs text-indigo-400 hover:underline font-mono"
+                >
+                  Download PDF ⬇
+                </a>
+              </div>
+              <button
+                onClick={() => setShowPdfModal(false)}
+                className="text-neutral-400 hover:text-white text-base cursor-pointer p-1"
+                aria-label="Tutup"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Frame Pembaca Dokumen Bawaan Peramban */}
+            <div className="flex-1 w-full bg-neutral-950">
+              <iframe
+                src={`${cvUrl}#toolbar=1&navpanes=0`}
+                title="CV PDF Viewer"
+                className="w-full h-full border-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

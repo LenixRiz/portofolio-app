@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="space-y-2 text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-2">
             <span className="font-bold text-lg text-white tracking-tight">
-              Portfolio<span className="text-indigo-500">.</span>
+              CreatedByLenix<span className="text-indigo-500">.</span>
             </span>
             <span className="text-xs bg-neutral-900 border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded-full font-mono">
               v1.0
@@ -25,7 +25,7 @@ export default function Footer() {
         <div className="flex items-center gap-5">
           {/* GitHub */}
           <a
-            href="https://github.com"
+            href="https://github.com/LenixRiz"
             target="_blank"
             rel="noreferrer"
             aria-label="GitHub Profile"
@@ -38,7 +38,7 @@ export default function Footer() {
 
           {/* X (Twitter) */}
           <a
-            href="https://x.com"
+            href="https://x.com/createdbylenix"
             target="_blank"
             rel="noreferrer"
             aria-label="X Profile"
@@ -51,7 +51,7 @@ export default function Footer() {
 
           {/* Instagram */}
           <a
-            href="https://instagram.com"
+            href="https://www.instagram.com/createdbylenix/"
             target="_blank"
             rel="noreferrer"
             aria-label="Instagram Profile"
@@ -64,7 +64,7 @@ export default function Footer() {
 
           {/* VGen / Art Commission Portal */}
           <a
-            href="https://vgen.co"
+            href="https://vgen.co/rizlenix_"
             target="_blank"
             rel="noreferrer"
             aria-label="VGen Portfolio"
@@ -82,7 +82,7 @@ export default function Footer() {
         {/* Sisi Kanan: Hak Cipta & Secret Gate ke CMS */}
         <div className="text-center md:text-right space-y-1">
           <p className="text-xs text-neutral-500">
-            © {currentYear} Rizlenix. All rights reserved.
+            © {currentYear} CreatedByLenix. All rights reserved.
           </p>
           <p className="text-xs text-neutral-400">
             Made with <span className="text-red-500 animate-pulse">❤️</span> by{' '}
