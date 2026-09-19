@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { projectService } from '../../services/api';
 import type { Project } from '../../types';
+import { Link } from 'react-router-dom';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -181,17 +182,18 @@ export default function ProjectsPage() {
 
             <div className="p-5 pt-0">
               <div className="pt-4 border-t border-neutral-800/80 space-y-4">
-                <div className="flex gap-1.5 flex-wrap">
-                  {item.tags
-                    .filter((tag) => tag && tag.trim().length > 0)
-                    .map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-xs bg-neutral-800/80 text-neutral-300 px-2 py-0.5 rounded font-mono"
-                      >
-                        #{tag.replace(/^#+/, '')}
-                      </span>
-                    ))}
+                  <div className="flex gap-1.5 flex-wrap">
+                    {item.tags
+                      .filter((tag) => tag && tag.trim().length > 0)
+                      .map((tag) => (
+                        <Link
+                          key={tag}
+                          to={`/tags/${tag.toLowerCase().replace(/^#+/, '')}`}
+                          className="text-xs bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 hover:text-indigo-400 px-2 py-0.5 rounded font-mono transition-colors"
+                        >
+                          #{tag.replace(/^#+/, '')}
+                        </Link>
+                      ))}
                 </div>
 
                 <div className="flex items-center gap-2 pt-1">

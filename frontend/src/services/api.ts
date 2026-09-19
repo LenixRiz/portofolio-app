@@ -6,7 +6,10 @@ import type {
   CreateIllustrationInput,
   CreateDevlogInput, 
   ContactMessage,
-  CreateContactMessageInput
+  CreateContactMessageInput,
+  SearchResults,
+  TagDetail,
+  TagSummary
 } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -183,4 +186,14 @@ export const messageService = {
     request<void>(`/messages/${id}`, {
       method: 'DELETE',
     }),
+};
+
+export const searchService = {
+  search: (query: string) =>
+    request<SearchResults>(`/search?q=${encodeURIComponent(query)}`),
+};
+
+export const tagService = {
+  getAll: () => request<TagSummary[]>('/tags'),
+  getBySlug: (slug: string) => request<TagDetail>(`/tags/${encodeURIComponent(slug)}`),
 };

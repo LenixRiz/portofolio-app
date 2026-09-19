@@ -8,7 +8,9 @@ import HomePage from './pages/public/Homepage';
 import ContactPage from './pages/public/ContactPage';
 import LoginPage from './pages/admin/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import Footer from './components/Footer'; // 1. Impor Footer
+import TagExplorerPage from './pages/public/TagExplorerPage';
+import SearchPage from './pages/public/SearchPage';
+import Footer from './components/Footer';
 
 function Navbar() {
   const location = useLocation();
@@ -44,6 +46,17 @@ function Navbar() {
           >
             Contact
           </Link>
+          <Link
+            to="/search"
+            aria-label="Search"
+            className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-900 rounded-lg transition-colors cursor-pointer"
+            title="Global Search"
+          >
+            <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </Link>
         </div>
       </div>
     </nav>
@@ -65,6 +78,9 @@ export default function App() {
               <Route path="/devlogs" element={<DevlogsPage />} />
               <Route path="/devlogs/:slug" element={<DevlogDetailPage key={window.location.pathname} />} />
               <Route path="/contact" element={<ContactPage />} />
+
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/tags/:slug" element={<TagExplorerPage key={window.location.pathname} />} />
 
               {/* Rute CMS Admin */}
               <Route path="/admin/login" element={<LoginPage />} />

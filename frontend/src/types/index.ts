@@ -87,3 +87,25 @@ export interface CreateContactMessageInput {
   message: string;
   budget?: string | null;
 }
+
+export interface SearchResults {
+  query: string;
+  totalResults: number;
+  projects: Project[];
+  devlogs: Devlog[];
+  illustrations: Illustration[];
+}
+
+export interface TagDetail {
+  name: string;
+  slug: string;
+  projects: Project[];
+  devlogs: Devlog[];
+  illustrations: Illustration[];
+}
+
+export interface TagSummary {
+  name: string;
+  slug: string;
+  usageCount: number;
+}
