@@ -2,10 +2,12 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import AdminDashboard from './pages/admin/AdminDashboard';
 import IllustrationsPage from './pages/public/IllustrationsPage';
 import ProjectsPage from './pages/public/ProjectsPage';
+import ProjectDetailPage from './pages/public/ProjectDetailPage';
 import DevlogsPage from './pages/public/DevlogsPage';
 import DevlogDetailPage from './pages/public/DevlogDetailPage';
 import HomePage from './pages/public/Homepage';
 import ContactPage from './pages/public/ContactPage';
+import AboutPage from './pages/public/AboutPage';
 import LoginPage from './pages/admin/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import TagExplorerPage from './pages/public/TagExplorerPage';
@@ -47,6 +49,12 @@ function Navbar() {
             Contact
           </Link>
           <Link
+            to="/about"
+            className={`${location.pathname === '/about' ? 'text-white font-medium' : 'text-neutral-400 hover:text-neutral-200'}`}
+          >
+            About
+          </Link>
+          <Link
             to="/search"
             aria-label="Search"
             className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-900 rounded-lg transition-colors cursor-pointer"
@@ -74,10 +82,12 @@ export default function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/projects/:slug" element={<ProjectDetailPage key={window.location.pathname} />} />
               <Route path="/illustrations" element={<IllustrationsPage />} />
               <Route path="/devlogs" element={<DevlogsPage />} />
               <Route path="/devlogs/:slug" element={<DevlogDetailPage key={window.location.pathname} />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/about" element={<AboutPage />} />
 
               <Route path="/search" element={<SearchPage />} />
               <Route path="/tags/:slug" element={<TagExplorerPage key={window.location.pathname} />} />

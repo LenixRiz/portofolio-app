@@ -3,6 +3,7 @@ import AdminProjects from './AdminProjects';
 import AdminIllustrations from './AdminIllustrations';
 import AdminDevlogs from './AdminDevlogs';
 import AdminMessages from './AdminMessages'; // Impor modul pesan
+import AdminCvManager from '../../components/AdminCvManager';
 import { authService } from '../../services/api';
 
 type Tab = 'projects' | 'devlogs' | 'illustrations' | 'messages';
@@ -65,6 +66,7 @@ export default function AdminDashboard() {
         </div>
       </header>
 
+      <AdminCvManager />
       <main>
         {activeTab === 'projects' && <AdminProjects />}
         {activeTab === 'devlogs' && <AdminDevlogs />}

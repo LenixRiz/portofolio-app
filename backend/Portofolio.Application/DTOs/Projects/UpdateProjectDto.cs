@@ -11,6 +11,7 @@ public class UpdateProjectDto
     public bool IsFeatured { get; set; }
     public bool IsOnGoing { get; set; }
     public bool IsFinished { get; set; }
+    public DateTime? CompletedAt { get; set; }  
 
     public List<string> TagNames { get; set; } = new();
     public List<string>? Tags { get; set; } // Fallback jika payload dikirim dengan nama "tags"

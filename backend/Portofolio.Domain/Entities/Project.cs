@@ -13,6 +13,7 @@ public class Project
     public bool IsFeatured { get; set; } = false;
     public bool IsOnGoing { get; set; } = false;
     public bool IsFinished { get; set; } = false;
+    public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Tag> Tags { get; set; } = new List<Tag>();

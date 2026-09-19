@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { projectService } from '../services/api';
+import ImageUploadField from './ImageUploadField';
 import type { Project } from '../types';
 
 interface Props {
-  project: Project; // Tidak perlu null karena modal hanya dirender jika data ada
+  project: Project;
   onClose: () => void;
   onSuccess: (updatedProject: Project) => void;
 }
@@ -12,7 +13,6 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Inisialisasi state langsung dari props saat komponen pertama kali di-mount
   const [form, setForm] = useState({
     title: project.title,
     summary: project.summary,
@@ -20,18 +20,18 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
     thumbnailUrl: project.thumbnailUrl,
     repositoryUrl: project.repositoryUrl || '',
     demoUrl: project.demoUrl || '',
+    completedAt: project.completedAt ? project.completedAt.split('T')[0] : '',
     isFeatured: project.isFeatured,
     isOnGoing: project.isOnGoing,
     isFinished: project.isFinished,
     tagsInput: project.tags.join(', '),
   });
-  
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
 
-    // Sanitasi: buang spasi, hapus simbol '#' yang diketik, filter string kosong
     const tagNames = form.tagsInput
       .split(',')
       .map((t) => t.trim().replace(/^#+/, '').trim())
@@ -42,9 +42,10 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
         title: form.title.trim(),
         summary: form.summary.trim(),
         description: form.description.trim(),
-        thumbnailUrl: form.thumbnailUrl.trim() || 'https://placehold.co/600x400/png',
+        thumbnailUrl: form.thumbnailUrl.trim(),
         repositoryUrl: form.repositoryUrl.trim() || null,
         demoUrl: form.demoUrl.trim() || null,
+        completedAt: form.completedAt ? new Date(form.completedAt).toISOString() : null,
         isFeatured: form.isFeatured,
         isOnGoing: form.isOnGoing,
         isFinished: form.isFinished,
@@ -91,6 +92,13 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
             />
           </div>
 
+          {/* Upload Langsung / URL Thumbnail */}
+          <ImageUploadField
+            label="Thumbnail Proyek (Upload / URL)"
+            value={form.thumbnailUrl}
+            onChange={(url) => setForm({ ...form, thumbnailUrl: url })}
+          />
+
           <div>
             <label className="block text-sm font-medium text-neutral-300 mb-1">Ringkasan Singkat *</label>
             <input
@@ -109,92 +117,105 @@ export default function EditProjectModal({ project, onClose, onSuccess }: Props)
               rows={4}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-300 mb-1">Tags (pisahkan koma)</label>
-            <input
-              type="text"
-              value={form.tagsInput}
-              onChange={(e) => setForm({ ...form, tagsInput: e.target.value })}
-              className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500 text-sm"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">Repository URL</label>
+              <label className="block text-sm font-medium text-neutral-300 mb-1">Repository URL (GitHub)</label>
               <input
                 type="url"
                 value={form.repositoryUrl}
                 onChange={(e) => setForm({ ...form, repositoryUrl: e.target.value })}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-1">Thumbnail URL</label>
+              <label className="block text-sm font-medium text-neutral-300 mb-1">Live Demo URL</label>
+              <input
+                type="url"
+                value={form.demoUrl}
+                onChange={(e) => setForm({ ...form, demoUrl: e.target.value })}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-neutral-300 mb-1">Tanggal Selesai</label>
+              <input
+                type="date"
+                value={form.completedAt}
+                onChange={(e) => setForm({ ...form, completedAt: e.target.value })}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-300 mb-1">Tags (pisahkan koma)</label>
               <input
                 type="text"
-                value={form.thumbnailUrl}
-                onChange={(e) => setForm({ ...form, thumbnailUrl: e.target.value })}
-                className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                value={form.tagsInput}
+                onChange={(e) => setForm({ ...form, tagsInput: e.target.value })}
+                className="w-full bg-neutral-950 border border-neutral-800 rounded px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              type="checkbox"
-              id="editFeatured"
-              checked={form.isFeatured}
-              onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
-              className="rounded bg-neutral-950 border-neutral-800 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-            />
-            <label htmlFor="editFeatured" className="text-sm text-neutral-300 cursor-pointer">
-              Tandai sebagai Proyek Utama (Featured)
-            </label>
-          </div>
+          <div className="space-y-2 pt-2 border-t border-neutral-800">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="editFeatured"
+                checked={form.isFeatured}
+                onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
+                className="rounded bg-neutral-950 border-neutral-800 text-amber-500 focus:ring-amber-500 cursor-pointer"
+              />
+              <label htmlFor="editFeatured" className="text-sm text-neutral-300 cursor-pointer">
+                Tandai sebagai Proyek Utama (Featured)
+              </label>
+            </div>
 
-          {/* Checkbox On Going */}
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              type="checkbox"
-              id="isOnGoing"
-              checked={form.isOnGoing}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  isOnGoing: e.target.checked,
-                  isFinished: e.target.checked ? false : form.isFinished, // Otomatis lepas Finished jika On Going aktif
-                })
-              }
-              className="rounded bg-neutral-950 border-neutral-800 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-            />
-            <label htmlFor="isOnGoing" className="text-sm text-neutral-300 cursor-pointer">
-              Tandai sebagai Proyek Berjalan (On Going)
-            </label>
-          </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="editOnGoing"
+                checked={form.isOnGoing}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    isOnGoing: e.target.checked,
+                    isFinished: e.target.checked ? false : form.isFinished,
+                  })
+                }
+                className="rounded bg-neutral-950 border-neutral-800 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+              />
+              <label htmlFor="editOnGoing" className="text-sm text-neutral-300 cursor-pointer">
+                Tandai sebagai Proyek Berjalan (On Going)
+              </label>
+            </div>
 
-          {/* Checkbox Finished */}
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              type="checkbox"
-              id="isFinished"
-              checked={form.isFinished}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  isFinished: e.target.checked,
-                  isOnGoing: e.target.checked ? false : form.isOnGoing, // Otomatis lepas On Going jika Finished aktif
-                })
-              }
-              className="rounded bg-neutral-950 border-neutral-800 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-            />
-            <label htmlFor="isFinished" className="text-sm text-neutral-300 cursor-pointer">
-              Tandai sebagai Proyek Selesai (Finished)
-            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="editFinished"
+                checked={form.isFinished}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    isFinished: e.target.checked,
+                    isOnGoing: e.target.checked ? false : form.isOnGoing,
+                  })
+                }
+                className="rounded bg-neutral-950 border-neutral-800 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              />
+              <label htmlFor="editFinished" className="text-sm text-neutral-300 cursor-pointer">
+                Tandai sebagai Proyek Selesai (Finished)
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-neutral-800">

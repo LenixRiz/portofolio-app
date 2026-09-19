@@ -1,14 +1,24 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { projectService } from '../../services/api';
 import type { Project } from '../../types';
-import { Link } from 'react-router-dom';
+
+function formatCompletedDate(dateStr?: string | null): string | null {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return null;
+
+  return date.toLocaleDateString('id-ID', {
+    month: 'short',
+    year: 'numeric',
+  });
+}
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // State filter
+
   const [selectedTag, setSelectedTag] = useState<string>('All');
   const [featuredOnly, setFeaturedOnly] = useState<boolean>(false);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ONGOING' | 'FINISHED'>('ALL');
@@ -25,13 +35,11 @@ export default function ProjectsPage() {
       });
   }, []);
 
-  // Ekstraksi tag unik dan valid untuk filter bar
   const allTags = [
     'All',
     ...Array.from(new Set(projects.flatMap((p) => p.tags.filter((t) => t && t.trim().length > 0)))),
   ];
 
-  // Logika pemfilteran sisi klien yang lengkap
   const filteredProjects = projects.filter((item) => {
     const matchesTag = selectedTag === 'All' || item.tags.includes(selectedTag);
     const matchesFeatured = !featuredOnly || item.isFeatured;
@@ -45,16 +53,13 @@ export default function ProjectsPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-8">
-      {/* Header Halaman */}
       <header className="mb-10">
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Software & Game Projects</h1>
+        <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">Software & Game Projects</h1>
         <p className="text-neutral-400 text-sm mt-1 max-w-2xl">
-          Katalog rekayasa perangkat lunak, arsitektur backend .NET, simulasi game Unity, dan proyek IoT.
+          Katalog rekayasa sistem backend berbasis .NET, simulasi interaktif Unity, dan arsitektur kode berskala produksi.
         </p>
 
-        {/* Filter Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6 pt-6 border-t border-neutral-800/80">
-          {/* Tag Filter Chips */}
           <div className="flex gap-2 flex-wrap items-center">
             {allTags.map((tag) => (
               <button
@@ -71,9 +76,7 @@ export default function ProjectsPage() {
             ))}
           </div>
 
-          {/* Status & Featured Filter Group */}
           <div className="flex gap-2 flex-wrap items-center shrink-0">
-            {/* Featured Toggle */}
             <button
               onClick={() => setFeaturedOnly(!featuredOnly)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
@@ -86,7 +89,6 @@ export default function ProjectsPage() {
               Featured
             </button>
 
-            {/* On Going Toggle */}
             <button
               onClick={() => setStatusFilter(statusFilter === 'ONGOING' ? 'ALL' : 'ONGOING')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
@@ -99,7 +101,6 @@ export default function ProjectsPage() {
               On Going
             </button>
 
-            {/* Finished Toggle */}
             <button
               onClick={() => setStatusFilter(statusFilter === 'FINISHED' ? 'ALL' : 'FINISHED')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
@@ -130,58 +131,84 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {/* Grid Proyek Publik */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProjects.map((item) => (
-          <article
-            key={item.id}
-            className="flex flex-col justify-between overflow-hidden rounded-xl bg-neutral-900/60 border border-neutral-800 hover:border-neutral-700 transition-all hover:-translate-y-0.5"
-          >
-            <div>
-              <div className="relative aspect-video w-full overflow-hidden bg-neutral-950 border-b border-neutral-800">
-                <img
-                  src={item.thumbnailUrl || 'https://placehold.co/600x400/171717/737373?text=No+Image'}
-                  alt={item.title}
-                  referrerPolicy="no-referrer"
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                  onError={(e) => {
-                    const img = e.currentTarget as HTMLImageElement;
-                    img.onerror = null;
-                    img.src = 'https://placehold.co/600x400/171717/ef4444?text=Invalid+Image';
-                  }}
-                />
-              </div>
+      {/* Grid Proyek 2 Kolom yang Lebih Besar */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {filteredProjects.map((item) => {
+          const completedDateStr = formatCompletedDate(item.completedAt);
 
-              <div className="p-5">
-                {/* Header Judul & Badges Terpadu */}
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h2 className="text-lg font-semibold text-neutral-100 line-clamp-1">{item.title}</h2>
-                  <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+          return (
+            <article
+              key={item.id}
+              className="group flex flex-col justify-between overflow-hidden rounded-2xl bg-neutral-900/60 border border-neutral-800 hover:border-neutral-700 transition-all hover:-translate-y-1 shadow-xl"
+            >
+              <div>
+                <Link to={`/projects/${item.slug}`} className="block relative aspect-video w-full overflow-hidden bg-neutral-950 border-b border-neutral-800">
+                  {item.thumbnailUrl && item.thumbnailUrl.trim().length > 0 ? (
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      referrerPolicy="no-referrer"
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      onError={(e) => {
+                        // Jika URL gambar rusak atau gagal dimuat, sembunyikan gambar agar fallback di belakangnya terlihat
+                        (e.currentTarget as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  ) : null}
+
+                  {/* Native Placeholder "In Development" (Tampil jika thumbnailUrl kosong atau rusak) */}
+                  {(!item.thumbnailUrl || item.thumbnailUrl.trim().length === 0) && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-b from-neutral-900/60 to-neutral-950 text-neutral-400 select-none">
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        In Development
+                      </div>
+                      <span className="text-[11px] text-neutral-600 font-mono">Visual Preview Coming Soon</span>
+                    </div>
+                  )}
+                </Link>
+
+                <div className="p-6">
+                  {/* Judul Proyek */}
+                  <h2 className="text-2xl font-bold text-neutral-100 hover:text-indigo-400 transition-colors leading-tight">
+                    <Link to={`/projects/${item.slug}`}>
+                      {item.title}
+                    </Link>
+                  </h2>
+
+                  {/* Status Badges + Tanggal Selesai Berada Tepat di Bawah Judul */}
+                  <div className="flex items-center gap-2 flex-wrap mt-2.5">
                     {item.isFeatured && (
-                      <span className="text-[10px] font-semibold tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase">
-                        Featured
+                      <span className="text-[10px] font-semibold tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-0.5 rounded-full uppercase">
+                        ★ Featured
                       </span>
                     )}
                     {item.isOnGoing && (
-                      <span className="text-[10px] font-semibold tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase">
-                        In Progress
+                      <span className="text-[10px] font-semibold tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full uppercase">
+                        ● In Progress
                       </span>
                     )}
                     {item.isFinished && (
-                      <span className="text-[10px] font-semibold tracking-wide bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2 py-0.5 rounded-full uppercase">
-                        Completed
+                      <span className="text-[10px] font-semibold tracking-wider bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2.5 py-0.5 rounded-full uppercase">
+                        ✓ Completed
+                      </span>
+                    )}
+                    {completedDateStr && (
+                      <span className="text-[11px] font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded border border-neutral-800">
+                        🗓️ {completedDateStr}
                       </span>
                     )}
                   </div>
+
+                  <p className="text-neutral-400 text-sm mt-4 leading-relaxed line-clamp-3">
+                    {item.summary}
+                  </p>
                 </div>
-
-                <p className="text-neutral-400 text-sm line-clamp-3 mb-4 leading-relaxed">{item.summary}</p>
               </div>
-            </div>
 
-            <div className="p-5 pt-0">
-              <div className="pt-4 border-t border-neutral-800/80 space-y-4">
+              <div className="p-6 pt-0">
+                <div className="pt-4 border-t border-neutral-800/80 space-y-4">
                   <div className="flex gap-1.5 flex-wrap">
                     {item.tags
                       .filter((tag) => tag && tag.trim().length > 0)
@@ -189,39 +216,49 @@ export default function ProjectsPage() {
                         <Link
                           key={tag}
                           to={`/tags/${tag.toLowerCase().replace(/^#+/, '')}`}
-                          className="text-xs bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 hover:text-indigo-400 px-2 py-0.5 rounded font-mono transition-colors"
+                          className="text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-indigo-400 px-2.5 py-1 rounded font-mono transition-colors"
                         >
                           #{tag.replace(/^#+/, '')}
                         </Link>
                       ))}
-                </div>
+                  </div>
 
-                <div className="flex items-center gap-2 pt-1">
-                  {item.repositoryUrl && (
-                    <a
-                      href={item.repositoryUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 text-center text-xs font-medium py-2 px-3 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 transition-colors"
+                  <div className="flex items-center gap-2.5 pt-1">
+                    <Link
+                      to={`/projects/${item.slug}`}
+                      className="flex-1 text-center text-xs font-semibold py-2.5 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 transition-colors"
                     >
-                      Source Code ↗
-                    </a>
-                  )}
-                  {item.demoUrl && (
-                    <a
-                      href={item.demoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 text-center text-xs font-medium py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-colors"
-                    >
-                      Live Demo ↗
-                    </a>
-                  )}
+                      Detail Proyek →
+                    </Link>
+
+                    {item.repositoryUrl && (
+                      <a
+                        href={item.repositoryUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-center text-xs font-medium py-2.5 px-4 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-neutral-300 transition-colors shrink-0"
+                      >
+                        Code ↗
+                      </a>
+                    )}
+
+                    {/* Tombol Demo HANYA MUNCUL jika demoUrl diisi pada form */}
+                    {item.demoUrl && item.demoUrl.trim().length > 0 && (
+                      <a
+                        href={item.demoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-center text-xs font-semibold py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shrink-0 shadow-md shadow-indigo-950/60"
+                      >
+                        Live Demo ↗
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
       </div>
     </div>
   );

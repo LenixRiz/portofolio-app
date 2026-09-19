@@ -17,8 +17,8 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
     {
         var projects = await context.Projects
             .AsNoTracking()
-            .OrderByDescending(p => p.CreatedAt) // Sort dari paling bawah
-            .Select(p => new ProjectDto // ambil variabel
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new ProjectDto
             {
                 Id = p.Id,
                 Title = p.Title,
@@ -31,12 +31,50 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
                 IsFeatured = p.IsFeatured,
                 IsOnGoing = p.IsOnGoing,
                 IsFinished = p.IsFinished,
+                CompletedAt = p.CompletedAt, // Petakan di sini
                 CreatedAt = p.CreatedAt,
                 Tags = p.Tags.Select(t => t.Name).ToList()
             })
             .ToListAsync();
-        
+
         return Ok(projects);
+    }
+
+    // GET: api/projects/{slug}
+    [HttpGet("{slug}")]
+    public async Task<ActionResult<ProjectDto>> GetProjectBySlug(string slug)
+    {
+        var cleanSlug = slug.Trim().ToLowerInvariant();
+
+        var project = await context.Projects
+            .Include(p => p.Tags)
+            .AsNoTracking()
+            .Where(p => p.Slug == cleanSlug)
+            .Select(p => new ProjectDto
+            {
+                Id = p.Id,
+                Title = p.Title,
+                Slug = p.Slug,
+                Summary = p.Summary,
+                Description = p.Description,
+                ThumbnailUrl = p.ThumbnailUrl,
+                RepositoryUrl = p.RepositoryUrl,
+                DemoUrl = p.DemoUrl,
+                IsFeatured = p.IsFeatured,
+                IsOnGoing = p.IsOnGoing,
+                IsFinished = p.IsFinished,
+                CompletedAt = p.CompletedAt, // Petakan di sini
+                CreatedAt = p.CreatedAt,
+                Tags = p.Tags.Select(t => t.Name).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (project == null)
+        {
+            return NotFound(new { message = $"Proyek dengan slug '{slug}' tidak ditemukan." });
+        }
+
+        return Ok(project);
     }
 
     // POST: api/projects
@@ -62,9 +100,10 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
             IsFeatured = dto.IsFeatured,
             IsOnGoing = dto.IsOnGoing,
             IsFinished = dto.IsFinished,
+            CompletedAt = dto.CompletedAt // Simpan nilai completedAt
         };
 
-        // Sanitasi input: buang '#', hapus spasi, filter teks kosong
+        // Sanitasi Tags...
         var cleanTagNames = (dto.TagNames ?? new List<string>())
             .Select(t => t.Trim().TrimStart('#').Trim())
             .Where(t => !string.IsNullOrWhiteSpace(t))
@@ -77,12 +116,7 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
             var existingTag = await context.Tags.FirstOrDefaultAsync(t => t.Slug == tagSlug);
             if (existingTag == null)
             {
-                existingTag = new Tag
-                {
-                    Id = Guid.NewGuid(),
-                    Name = name,
-                    Slug = tagSlug
-                };
+                existingTag = new Tag { Id = Guid.NewGuid(), Name = name, Slug = tagSlug };
                 context.Tags.Add(existingTag);
             }
             project.Tags.Add(existingTag);
@@ -104,6 +138,7 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
             IsFeatured = project.IsFeatured,
             IsOnGoing = project.IsOnGoing,
             IsFinished = project.IsFinished,
+            CompletedAt = project.CompletedAt,
             CreatedAt = project.CreatedAt,
             Tags = project.Tags.Select(t => t.Name).ToList()
         };
@@ -134,33 +169,25 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
         project.IsFeatured = dto.IsFeatured;
         project.IsOnGoing = dto.IsOnGoing;
         project.IsFinished = dto.IsFinished;
+        project.CompletedAt = dto.CompletedAt; // Update nilai completedAt
 
-        // Ambil input dan sanitasi ketat simbol '#' serta spasi kosong
+        // Tag Differential Update...
         var rawInput = (dto.TagNames != null && dto.TagNames.Count > 0 ? dto.TagNames : dto.Tags) ?? new List<string>();
-
         var cleanTagNames = rawInput
             .Select(t => t.Trim().TrimStart('#').Trim())
             .Where(t => !string.IsNullOrWhiteSpace(t))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        var targetSlugs = cleanTagNames
-            .Select(t => t.ToLower().Replace(" ", "-"))
-            .ToHashSet();
+        var targetSlugs = cleanTagNames.Select(t => t.ToLower().Replace(" ", "-")).ToHashSet();
 
-        // 1. Lepas asosiasi tag yang dihapus pengguna
-        var tagsToRemove = project.Tags
-            .Where(t => !targetSlugs.Contains(t.Slug))
-            .ToList();
-
+        var tagsToRemove = project.Tags.Where(t => !targetSlugs.Contains(t.Slug)).ToList();
         foreach (var tag in tagsToRemove)
         {
             project.Tags.Remove(tag);
         }
 
-        // 2. Tambahkan tag baru yang belum terhubung
         var currentSlugs = project.Tags.Select(t => t.Slug).ToHashSet();
-
         foreach (var name in cleanTagNames)
         {
             var slug = name.ToLower().Replace(" ", "-");
@@ -169,15 +196,9 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
             var existingTag = await context.Tags.FirstOrDefaultAsync(t => t.Slug == slug);
             if (existingTag == null)
             {
-                existingTag = new Tag
-                {
-                    Id = Guid.NewGuid(),
-                    Name = name,
-                    Slug = slug
-                };
+                existingTag = new Tag { Id = Guid.NewGuid(), Name = name, Slug = slug };
                 context.Tags.Add(existingTag);
             }
-
             project.Tags.Add(existingTag);
         }
 
@@ -196,11 +217,9 @@ public class ProjectsController(ApplicationDbContext context) : ControllerBase
             IsFeatured = project.IsFeatured,
             IsOnGoing = project.IsOnGoing,
             IsFinished = project.IsFinished,
+            CompletedAt = project.CompletedAt,
             CreatedAt = project.CreatedAt,
-            Tags = project.Tags
-                .Select(t => t.Name)
-                .Where(n => !string.IsNullOrWhiteSpace(n))
-                .ToList()
+            Tags = project.Tags.Select(t => t.Name).Where(n => !string.IsNullOrWhiteSpace(n)).ToList()
         });
     }
     

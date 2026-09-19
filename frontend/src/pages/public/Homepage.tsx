@@ -81,20 +81,46 @@ export default function HomePage() {
             {featuredProjects.map((item) => (
               <article
                 key={item.id}
-                className="flex flex-col justify-between overflow-hidden rounded-xl bg-neutral-900/40 border border-neutral-800 hover:border-neutral-700 transition-all hover:-translate-y-0.5"
+                className="group flex flex-col justify-between overflow-hidden rounded-xl bg-neutral-900/40 border border-neutral-800 hover:border-neutral-700 transition-all hover:-translate-y-0.5"
               >
                 <div>
-                  <div className="aspect-video w-full overflow-hidden bg-neutral-950 border-b border-neutral-800">
-                    <img
-                      src={item.thumbnailUrl || 'https://placehold.co/600x400/171717/737373?text=No+Image'}
-                      alt={item.title}
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                  </div>
+                  {/* Wadah Thumbnail Proyek */}
+                  <Link
+                    to={`/projects/${item.slug}`}
+                    className="block relative aspect-video w-full overflow-hidden bg-neutral-950 border-b border-neutral-800"
+                  >
+                    {item.thumbnailUrl && item.thumbnailUrl.trim().length > 0 ? (
+                      <img
+                        src={item.thumbnailUrl}
+                        alt={item.title}
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          // Sembunyikan gambar jika broken link agar fallback di belakangnya muncul
+                          (e.currentTarget as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+
+                    {/* Native Placeholder "In Development" (Muncul saat thumbnailUrl kosong atau gagal dimuat) */}
+                    {(!item.thumbnailUrl || item.thumbnailUrl.trim().length === 0) && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-gradient-to-b from-neutral-900/70 to-neutral-950 text-neutral-400 select-none">
+                        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          In Development
+                        </div>
+                        <span className="text-[10px] text-neutral-600 font-mono">Visual Coming Soon</span>
+                      </div>
+                    )}
+                  </Link>
+
                   <div className="p-5">
-                    <h3 className="font-semibold text-neutral-100 text-base mb-2">{item.title}</h3>
+                    <h3 className="font-semibold text-neutral-100 text-base mb-2 hover:text-indigo-400 transition-colors">
+                      <Link to={`/projects/${item.slug}`}>
+                        {item.title}
+                      </Link>
+                    </h3>
                     <p className="text-neutral-400 text-xs line-clamp-2 leading-relaxed">{item.summary}</p>
                   </div>
                 </div>
@@ -102,9 +128,13 @@ export default function HomePage() {
                 <div className="p-5 pt-0">
                   <div className="flex gap-1.5 flex-wrap pt-3 border-t border-neutral-800/60">
                     {item.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className="text-[10px] bg-neutral-800/80 text-neutral-400 px-2 py-0.5 rounded font-mono">
+                      <Link
+                        key={tag}
+                        to={`/tags/${tag.toLowerCase().replace(/^#+/, '')}`}
+                        className="text-[10px] bg-neutral-800/80 hover:bg-neutral-700 text-neutral-400 hover:text-indigo-400 px-2 py-0.5 rounded font-mono transition-colors"
+                      >
                         #{tag.replace(/^#+/, '')}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 </div>

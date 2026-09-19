@@ -17,6 +17,7 @@ public class CreateProjectDto
     public bool IsFeatured { get; set; }
     public bool IsOnGoing { get; set; }
     public bool IsFinished { get; set; }
+    public DateTime? CompletedAt { get; set; }
 
     public List<string> TagNames { get; set; } = new();
 }

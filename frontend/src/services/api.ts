@@ -197,3 +197,37 @@ export const tagService = {
   getAll: () => request<TagSummary[]>('/tags'),
   getBySlug: (slug: string) => request<TagDetail>(`/tags/${encodeURIComponent(slug)}`),
 };
+
+export const cvService = {
+  getStatus: () =>
+    request<{ url: string; updatedAt: string }>('/upload/cv'),
+
+  upload: async (file: File): Promise<{ url: string; updatedAt: string }> => {
+    const token = localStorage.getItem('admin_token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${BASE_URL}/upload/cv`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/admin/login';
+    }
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(err || 'Gagal mengunggah CV.');
+    }
+
+    return response.json();
+  },
+};

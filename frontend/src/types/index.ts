@@ -10,6 +10,7 @@ export interface Project {
   isFeatured: boolean;
   isOnGoing: boolean;
   isFinished: boolean;
+  completedAt?: string | null;
   createdAt: string;
   tags: string[];
 }
@@ -36,6 +37,7 @@ export interface CreateProjectInput {
   isFeatured: boolean;
   isOnGoing: boolean;
   isFinished: boolean;
+  completedAt?: string | null;
   tagNames: string[];
 }
 
