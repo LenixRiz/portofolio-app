@@ -29,6 +29,7 @@ bld/
 # 2. Node.js & React (Frontend)
 # ==========================================
 node_modules/
+.vite/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -41,21 +42,39 @@ frontend/dist-ssr/
 *.local
 
 # ==========================================
-# 3. Environment Variables & Secret Files
+# 3. Dynamic User Uploads & Media Assets
 # ==========================================
-# File berisi secret key, token, connection string rahasia
+# Abaikan seluruh berkas gambar dan dokumen dinamis hasil upload lokal,
+# tetapi pertahankan struktur foldernya melalui file .gitkeep.
+backend/**/wwwroot/uploads/*
+!backend/**/wwwroot/uploads/.gitkeep
+
+backend/**/wwwroot/docs/*
+!backend/**/wwwroot/docs/.gitkeep
+
+# ==========================================
+# 4. Environment Variables, Secrets & Backups
+# ==========================================
+# File konfigurasi rahasia Docker & Node
 .env
 .env.local
 .env.*.local
 *.env
 
+# File dump database & sertifikat
+*.sql
+*.dump
+*.bak
+*.pfx
+*.cer
+*.crt
+*.key
+
 # .NET User Secrets & appsettings override lokal
 backend/**/appsettings.Development.json
-# (Catatan: appsettings.json dasar tetap boleh di-commit sebagai template,
-# tapi file Development yang berisi password DB lokal sebaiknya diabaikan jika sensitif)
 
 # ==========================================
-# 4. OS & System Junk
+# 5. OS & System Junk
 # ==========================================
 .DS_Store
 Thumbs.db

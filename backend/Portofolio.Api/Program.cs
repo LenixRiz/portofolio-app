@@ -114,4 +114,23 @@ app.UseAuthorization();  // 2. Otorisasi (Evaluasi hak akses)
 
 app.MapControllers();
 
+// Otomatisasi eksekusi migrasi EF Core saat startup kontainer
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        if (context.Database.IsRelational())
+        {
+            await context.Database.MigrateAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Terjadi kesalahan fatal saat menjalankan migrasi basis data otomatis.");
+    }
+}
+
 app.Run();

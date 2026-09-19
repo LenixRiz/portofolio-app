@@ -1,0 +1,75 @@
+services:
+  # 1. Database Service (PostgreSQL)
+  db:
+    image: postgres:16-alpine
+    container_name: portofolio_db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Backend Service (.NET 9 Web API)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: portofolio_backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      AdminCredentials__Username: ${ADMIN_USER}
+      AdminCredentials__Password: ${ADMIN_PASSWORD}
+      EmailSettings__SmtpServer: ${SMTP_SERVER}
+      EmailSettings__Port: ${SMTP_PORT}
+      EmailSettings__SenderName: ${SMTP_SENDER_NAME}
+      EmailSettings__SenderEmail: ${SMTP_SENDER_EMAIL}
+      EmailSettings__SenderPassword: ${SMTP_SENDER_PASSWORD}
+      EmailSettings__ReceiverEmail: ${SMTP_RECEIVER_EMAIL}
+    volumes:
+      - uploads_data:/app/wwwroot/uploads
+      - docs_data:/app/wwwroot/docs
+    networks:
+      - app-network
+
+# 3. Frontend Service (Nginx + React SPA)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: portofolio_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+    name: portofolio_pgdata
+  uploads_data:
+    name: portofolio_uploads_data
+  docs_data:
+    name: portofolio_docs_data
+
+networks:
+  app-network:
+    name: portofolio_network
+    driver: bridge
